@@ -360,7 +360,6 @@ img{max-width:100%;display:block}
   background:var(--zona-muda);border:2px solid rgba(255,255,255,.9);
   box-shadow:var(--neu-pressed-kecil);
 }
-.kartu-gambar::after{content:"";position:absolute;inset:0;background:var(--zona-grad);opacity:.35;pointer-events:none}
 .kartu-gambar img{width:100%;height:100%;object-fit:cover;position:relative;z-index:1;transition:transform .3s}
 .kartu:hover .kartu-gambar img{transform:scale(1.06) rotate(1deg)}
 .stiker{
@@ -424,17 +423,33 @@ img{max-width:100%;display:block}
 }
 .remah a:hover{color:var(--lilac-deep);text-decoration:underline}
 .detail{
-  display:grid;grid-template-columns:minmax(0,1.08fr) minmax(0,1fr);gap:28px;
+  display:grid;grid-template-columns:minmax(0,1.08fr) minmax(0,1fr);gap:28px;align-items:start;
   background:var(--bg);padding:20px;border-radius:32px;
   border:2px solid rgba(255,255,255,.9);box-shadow:var(--neu-raised);
 }
 .detail-gambar{
-  background:var(--zona-muda);border-radius:24px;overflow:hidden;position:relative;
-  border:2px solid #fff;box-shadow:var(--neu-pressed);min-height:320px;display:grid;place-items:center;
+  background:var(--bg);border-radius:24px;position:relative;
+  border:2px solid rgba(255,255,255,.9);box-shadow:var(--neu-raised-kecil);
+  padding:12px;aspect-ratio:16/10;min-height:0;display:block;align-self:start;overflow:hidden;
 }
-.detail-gambar::after{content:"";position:absolute;inset:0;background:var(--zona-grad);opacity:.28;pointer-events:none}
-.detail-gambar img{width:100%;height:100%;object-fit:cover;position:relative;z-index:1}
-.detail-badge-float{position:absolute;z-index:2;top:14px;left:14px;display:flex;gap:8px}
+.detail-gambar img{width:100%;height:100%;aspect-ratio:16/10;object-fit:cover;position:relative;z-index:0;display:block;background:#fff;border-radius:16px;border:2px solid rgba(255,255,255,.9);box-shadow:var(--neu-pressed-kecil);cursor:zoom-in}
+.detail-badge-float{position:absolute;z-index:2;top:22px;left:22px;display:flex;gap:8px;pointer-events:none}
+.detail-zoom-hint{display:flex;align-items:center;gap:6px;margin-top:10px;font-size:12.5px;font-weight:800;color:var(--teks-redup)}
+.galeri-thumbs{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+.thumb-btn{position:relative;border:2px solid #fff;border-radius:16px;overflow:hidden;background:var(--bg);cursor:pointer;padding:0;width:86px;box-shadow:var(--neu-raised-kecil);transition:transform .15s}
+.thumb-btn:hover{transform:translateY(-2px)}
+.thumb-btn.aktif{outline:3px solid var(--lilac-deep);outline-offset:2px}
+.thumb-btn img{width:100%;height:64px;object-fit:cover;display:block}
+.thumb-btn span{position:absolute;bottom:4px;right:4px;background:rgba(255,255,255,.95);font-size:11px;font-weight:800;padding:1px 8px;border-radius:999px;box-shadow:var(--neu-raised-kecil)}
+.custom-notice{margin-top:12px;padding:16px 18px;border-radius:20px;background:linear-gradient(135deg,#FFF7CC 0%,#FFE3EC 55%,#EDE4FF 100%);border:2px solid #fff;box-shadow:var(--neu-raised-kecil)}
+.custom-notice strong{font-family:var(--font-judul);font-size:16px;display:block}
+.custom-notice p{margin:6px 0 12px;font-size:14px;font-weight:700;color:var(--teks)}
+.custom-notice .tombol{background:linear-gradient(135deg,#3ECF95,#25D366);border-color:#fff}
+/* Lightbox enlarge */
+.lightbox{position:fixed;inset:0;z-index:9999;display:none;place-items:center;padding:24px;background:rgba(75,75,110,.7);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.lightbox.tampil{display:grid}
+.lightbox img{max-width:min(92vw,1000px);max-height:86vh;width:auto;height:auto;border-radius:20px;border:4px solid #fff;box-shadow:0 20px 60px rgba(0,0,0,.35);background:#fff;object-fit:contain}
+.lightbox-tutup{position:absolute;top:18px;right:18px;width:48px;height:48px;border-radius:50%;border:3px solid #fff;background:var(--bg);font-size:20px;font-weight:800;cursor:pointer;box-shadow:var(--neu-raised-kecil)}
 .detail-badge-float span{background:#fff;border-radius:999px;padding:5px 14px;font-size:12.5px;font-weight:800;box-shadow:var(--neu-raised-kecil);border:2px solid #fff}
 .detail-info{background:rgba(255,255,255,.55);border-radius:24px;padding:22px;border:2px solid rgba(255,255,255,.85)}
 .detail-info h1{margin-bottom:6px;font-size:clamp(26px,3.2vw,36px);font-weight:800}

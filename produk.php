@@ -20,6 +20,10 @@ $terkait = array_slice(array_values($terkait), 0, 3);
 $z = $usia[$p['usia']];
 $judul_halaman = $p['nama'];
 $menu_aktif = $p['usia'];
+// Galeri: pakai 'galeri' jika ada, fallback ke 'gambar' tunggal.
+// Konvensi: gambar ke-2 dst boleh pakai akhiran _b, _c, _d, dst.
+$galeri = $p['galeri'] ?? [$p['gambar']];
+$label_galeri = ['Utama', 'B', 'C', 'D', 'E', 'F'];
 require __DIR__ . '/includes/header.php';
 ?>
 
@@ -31,12 +35,30 @@ require __DIR__ . '/includes/header.php';
 </nav>
 
 <section class="detail">
-    <div class="detail-gambar warna-<?= e($z['warna']) ?>">
-        <div class="detail-badge-float">
-            <?php if ($p['terlaris']): ?><span>🌟 Terlaris!</span><?php endif; ?>
-            <span>✨ <?= e($z['label']) ?></span>
+    <div>
+        <div class="detail-gambar warna-<?= e($z['warna']) ?>">
+            <div class="detail-badge-float">
+                <?php if ($p['terlaris']): ?><span>🌟 Terlaris!</span><?php endif; ?>
+                <span>✨ <?= e($z['label']) ?></span>
+            </div>
+            <img id="gambarUtama" src="<?= e(gambar_url($galeri[0])) ?>" alt="<?= e($p['nama']) ?>" title="Klik untuk memperbesar">
         </div>
-        <img src="<?= e(gambar_url($p['gambar'])) ?>" alt="<?= e($p['nama']) ?>">
+        <?php if (count($galeri) > 1): ?>
+        <div class="galeri-thumbs" role="tablist" aria-label="Galeri produk">
+            <?php foreach ($galeri as $i => $g): ?>
+            <button class="thumb-btn <?= $i === 0 ? 'aktif' : '' ?>" data-src="<?= e(gambar_url($g)) ?>" data-index="<?= $i ?>">
+                <img src="<?= e(gambar_url($g)) ?>" alt="<?= e($p['nama']) ?> - foto <?= e($label_galeri[$i] ?? ($i + 1)) ?>" loading="lazy">
+                <span><?= e($label_galeri[$i] ?? ($i + 1)) ?></span>
+            </button>
+            <?php endforeach; ?>
+        </div>
+        <?php endif; ?>
+        <span class="detail-zoom-hint">🔍 Klik gambar untuk memperbesar ke ukuran asli</span>
+        <div class="custom-notice">
+            <strong>✨ Mau versi custom?</strong>
+            <p>3D print ini <b>bisa di-custom</b>! Langsung info ke WA aja biar bisa cek <b>desain, harga & waktu pengerjaannya</b> 💬</p>
+            <a class="tombol kecil" target="_blank" rel="noopener" href="https://wa.me/6281234567890?text=<?= rawurlencode('Halo! Saya mau tanya custom 3D print: ' . $p['nama']) ?>">💬 Tanya custom via WA</a>
+        </div>
     </div>
     <div class="detail-info">
         <h1><?= e($p['nama']) ?></h1>

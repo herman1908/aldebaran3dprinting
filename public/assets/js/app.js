@@ -77,6 +77,43 @@
         revealEls.forEach(function (el) { el.classList.add('muncul'); });
     }
 
+    // Galeri thumbs: klik B/C/D untuk ganti gambar utama
+    var thumbs = document.querySelectorAll('.thumb-btn');
+    var gambarUtamaPre = document.getElementById('gambarUtama');
+    if (thumbs.length && gambarUtamaPre) {
+        thumbs.forEach(function (t) {
+            t.addEventListener('click', function () {
+                thumbs.forEach(function (x) { x.classList.remove('aktif'); });
+                t.classList.add('aktif');
+                gambarUtamaPre.src = t.getAttribute('data-src');
+            });
+        });
+    }
+
+    // Lightbox: klik gambar produk untuk enlarge ke ukuran asli
+    var gambarUtama = document.getElementById('gambarUtama');
+    if (gambarUtama) {
+        var box = document.createElement('div');
+        box.className = 'lightbox';
+        box.innerHTML = '<button class="lightbox-tutup" aria-label="Tutup">✕</button><img alt="">';
+        document.body.appendChild(box);
+        var boxImg = box.querySelector('img');
+        function bukaBox() {
+            boxImg.src = gambarUtama.src;
+            boxImg.alt = gambarUtama.alt;
+            box.classList.add('tampil');
+            document.body.style.overflow = 'hidden';
+        }
+        function tutupBox() {
+            box.classList.remove('tampil');
+            document.body.style.overflow = '';
+        }
+        gambarUtama.addEventListener('click', bukaBox);
+        box.querySelector('.lightbox-tutup').addEventListener('click', tutupBox);
+        box.addEventListener('click', function (ev) { if (ev.target === box) tutupBox(); });
+        document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape') tutupBox(); });
+    }
+
     // Hati melayang saat klik tombol + keranjang
     document.querySelectorAll('.kartu form button, .form-beli button[type=submit]').forEach(function (btn) {
         btn.addEventListener('click', function (ev) {
