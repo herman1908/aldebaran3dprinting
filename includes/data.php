@@ -47,21 +47,21 @@ $produk = [
     [
         'id' => 4, 'nama' => 'NAME CLICKER CREATOR', 'penjual' => 'Aldebaran Studio',
         'kategori' => ['mainan', 'terlaris'], 'usia' => 'anak', 'harga' => 12000, 'unduhan' => 9300, 'suka' => 8100,
-        'gambar' => 'name-clicker-creator.jpeg', 'terlaris' => true,
+        'gambar' => 'name-clicker-creator.jpeg', 'terlaris' => true, 'unggulan' => true,
         'galeri' => ['name-clicker-creator.jpeg', 'name-clicker-creator_b.jpeg'],
         'deskripsi' => 'Bikin namamu jadi fidget clicker yang bunyinya satisfying banget! Setiap huruf dicetak 3D tebal, warna pastel bisa pilih sendiri, dan tiap huruf bisa diklik-klik. Cocok untuk kado nama teman, dekor tas, atau koleksi di kamar. Harga mulai Rp12.000 untuk 1 huruf, tambah Rp4.000 per huruf berikutnya. Contoh: nama 5 huruf = Rp12.000 + (4 x Rp4.000) = Rp28.000. Tulis ejaan nama yang mau dibuat saat checkout ya!'
     ],
     [
         'id' => 15, 'nama' => 'Cheese Fidget Clicker', 'penjual' => 'Aldebaran Studio',
         'kategori' => ['mainan', 'terlaris'], 'usia' => 'anak', 'harga' => 35000, 'unduhan' => 8900, 'suka' => 8050,
-        'gambar' => 'cheese-fidget-clicker.jpeg', 'terlaris' => false,
+        'gambar' => 'cheese-fidget-clicker.jpeg', 'terlaris' => false, 'unggulan' => true,
         'galeri' => ['cheese-fidget-clicker.jpeg', 'cheese-fidget-clicker_b.jpeg'],
         'deskripsi' => 'Fidget clicker bentuk keju yang empuk diklik. Bikin tangan sibuk jadi tenang, cocok untuk main di rumah atau di sekolah.'
     ],
     [
         'id' => 16, 'nama' => 'Cloud Clicker', 'penjual' => 'Aldebaran Studio',
         'kategori' => ['mainan', 'terlaris'], 'usia' => 'anak', 'harga' => 15999, 'unduhan' => 8700, 'suka' => 8000,
-        'gambar' => 'cloud-clicker.jpeg', 'terlaris' => false,
+        'gambar' => 'cloud-clicker.jpeg', 'terlaris' => false, 'unggulan' => true,
         'galeri' => ['cloud-clicker.jpeg', 'cloud-clicker_b.jpeg', 'cloud-clicker_c.jpeg'],
         'deskripsi' => 'Fidget clicker bentuk awan yang gemoy dan bunyinya satisfying. Empuk diklik-klik, cocok untuk fokus belajar, koleksi, atau kado teman.'
     ],

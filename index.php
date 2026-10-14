@@ -27,9 +27,13 @@ $hasil = array_filter($produk, function ($p) use ($kat, $u, $q) {
     return true;
 });
 
-// Urutkan
+// Urutkan: produk 'unggulan' selalu dikunci di paling depan,
+// baru sisanya ikut mode urut (populer/terbaru/termurah/termahal).
 $hasil = array_values($hasil);
 usort($hasil, function ($a, $b) use ($urut) {
+    $ua = !empty($a['unggulan']) ? 1 : 0;
+    $ub = !empty($b['unggulan']) ? 1 : 0;
+    if ($ua !== $ub) return $ub <=> $ua;
     switch ($urut) {
         case 'termurah': return $a['harga'] <=> $b['harga'];
         case 'termahal': return $b['harga'] <=> $a['harga'];
