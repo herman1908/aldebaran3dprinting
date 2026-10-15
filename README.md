@@ -33,6 +33,13 @@ Jika `php` tidak dikenali, ubah isi file `.bat` menjadi `C:\xampp\php\php.exe -S
 
 Semua produk ada di `includes/data.php`. Taruh foto produk di `public/images/`, lalu tulis nama file-nya di kolom `gambar`.
 
+## Kredit foto produk
+
+Foto produk saat ini memakai foto berlisensi bebas (CC BY / CC BY-SA) yang ditemukan via
+[Openverse](https://openverse.org). Daftar lengkap kreator dan tautan sumber ada di komentar
+atas `includes/data.php`. Jika mengganti foto dengan foto sendiri, blok kredit tersebut boleh
+dihapus. Atribusi ringkas juga tampil di badge footer situs.
+
 ## Upload ke GitHub dengan GitHub Desktop
 
 1. Pasang GitHub Desktop dan masuk dengan akun GitHub.

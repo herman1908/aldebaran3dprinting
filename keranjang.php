@@ -48,15 +48,15 @@ $menu_aktif = 'koleksi';
 require __DIR__ . '/includes/header.php';
 ?>
 
-<h1 class="judul-bagian">🛒 Keranjang Belanja</h1>
+<h1 class="judul-bagian">Keranjang Belanja</h1>
 
-<?php if ($pesan): ?><div class="notif">✨ <?= e($pesan) ?></div><?php endif; ?>
+<?php if ($pesan): ?><div class="notif"><?= e($pesan) ?></div><?php endif; ?>
 
 <?php if (!keranjang()): ?>
     <div class="kosong">
         <img src="/images/aldi-maskot.svg" alt="" width="90" height="90">
-        <p>Keranjangmu masih kosong 🥺 Yuk cari mainan pastel yang gemas dulu!</p>
-        <a class="tombol" href="index.php#produk">🎈 Mulai belanja</a>
+        <p>Keranjang masih kosong. Jelajahi katalog untuk menemukan produk yang sesuai.</p>
+        <a class="tombol" href="index.php#produk">Mulai belanja</a>
     </div>
 <?php else: ?>
     <div class="tabel-bungkus">
@@ -99,17 +99,17 @@ require __DIR__ . '/includes/header.php';
     </div>
 
     <div class="ringkasan">
-        <p>🎀 Total belanja: <strong class="harga-besar"><?= rupiah(total_keranjang()) ?></strong><br><small style="color:var(--teks-redup)">Sudah termasuk bungkus kado pastel gratis!</small></p>
+        <p>Total belanja: <strong class="harga-besar"><?= rupiah(total_keranjang()) ?></strong><br><small style="color:var(--muted)">Sudah termasuk bungkus kado standar.</small></p>
         <div class="aksi-baris">
             <form method="post">
                 <input type="hidden" name="csrf" value="<?= csrf_token() ?>">
                 <input type="hidden" name="aksi" value="kosongkan">
-                <button class="tombol abu" type="submit">🗑️ Kosongkan</button>
+                <button class="tombol abu" type="submit">Kosongkan</button>
             </form>
             <form method="post">
                 <input type="hidden" name="csrf" value="<?= csrf_token() ?>">
                 <input type="hidden" name="aksi" value="checkout">
-                <button class="tombol" type="submit">💖 Checkout sekarang</button>
+                <button class="tombol" type="submit">Checkout</button>
             </form>
         </div>
     </div>

@@ -2,27 +2,24 @@
 require_once __DIR__ . '/includes/functions.php';
 
 $kat  = $_GET['kategori'] ?? 'semua';
-$u    = $_GET['usia'] ?? '';
 $q    = trim($_GET['q'] ?? '');
 $urut = $_GET['urut'] ?? 'populer';
 
 if (!isset($kategori[$kat])) $kat = 'semua';
-if (!isset($usia[$u])) $u = '';
 
 /** Bangun URL daftar produk dengan mengganti sebagian parameter. */
 function url_daftar(array $ubah): string {
-    global $kat, $u, $q, $urut;
-    $p = array_merge(['kategori' => $kat, 'usia' => $u, 'q' => $q, 'urut' => $urut], $ubah);
-    foreach (['kategori' => 'semua', 'usia' => '', 'q' => '', 'urut' => 'populer'] as $k => $default) {
+    global $kat, $q, $urut;
+    $p = array_merge(['kategori' => $kat, 'q' => $q, 'urut' => $urut], $ubah);
+    foreach (['kategori' => 'semua', 'q' => '', 'urut' => 'populer'] as $k => $default) {
         if ($p[$k] === $default) unset($p[$k]);
     }
     return 'index.php' . ($p ? '?' . http_build_query($p) : '') . '#produk';
 }
 
 // Filter
-$hasil = array_filter($produk, function ($p) use ($kat, $u, $q) {
+$hasil = array_filter($produk, function ($p) use ($kat, $q) {
     if ($kat !== 'semua' && !in_array($kat, $p['kategori'], true)) return false;
-    if ($u !== '' && $p['usia'] !== $u) return false;
     if ($q !== '' && stripos($p['nama'], $q) === false && stripos($p['penjual'], $q) === false) return false;
     return true;
 });
@@ -42,64 +39,89 @@ usort($hasil, function ($a, $b) use ($urut) {
     }
 });
 
-$ada_filter = $kat !== 'semua' || $u !== '' || $q !== '';
-if ($u !== '')            $menu_aktif = $u;
-elseif ($kat !== 'semua') $menu_aktif = $kat;
-else                      $menu_aktif = $q === '' ? 'beranda' : '';
+$ada_filter = $kat !== 'semua' || $q !== '';
+if ($kat !== 'semua') $menu_aktif = $kat;
+else                   $menu_aktif = $q === '' ? 'beranda' : '';
 
-$judul_halaman = $u !== '' ? $usia[$u]['label'] : ($kat === 'semua' ? 'Beranda' : $kategori[$kat]);
+$judul_halaman = $kat === 'semua' ? 'Beranda' : $kategori[$kat];
+
+// Hero carousel: 4 produk terbaik (unggulan dulu, lalu paling disukai).
+$hero_produk = $produk;
+usort($hero_produk, function ($a, $b) {
+    $ua = !empty($a['unggulan']) ? 1 : 0;
+    $ub = !empty($b['unggulan']) ? 1 : 0;
+    if ($ua !== $ub) return $ub <=> $ua;
+    return $b['suka'] <=> $a['suka'];
+});
+$hero_produk = array_slice(array_values($hero_produk), 0, 4);
+
 require __DIR__ . '/includes/header.php';
 ?>
 
 <?php if (!$ada_filter): ?>
 <section class="hero">
     <div class="hero-teks">
-        <span class="hero-badge"><span class="dot">✨</span> Bisa pilih warna sendiri, lho!</span>
-        <h1>Mainan 3D <span class="hl-pink">super gemas</span> buat <span class="hl-mint">balita</span> sampai <span class="hl-sky">anak SMA</span></h1>
-        <p>Dicetak dengan printer 3D, warnanya pastel semua~ Tinggal pilih usiamu, lalu temukan mainan, alat sekolah, dan hiasan kamar yang paling kamu suka. 💖</p>
+        <span class="hero-badge"><span class="dot">Custom</span> Warna dan bentuk bisa disesuaikan</span>
+        <h1>Studio cetak 3D untuk <span class="hl-pink">clicker</span>, <span class="hl-mint">figure</span> dan <span class="hl-sky">dekor kamar</span></h1>
+        <p>Setiap produk dicetak presisi dengan finishing rapi. Pilih kategori bentuk, tentukan warna, dan ajukan custom untuk kebutuhan personal maupun kado.</p>
         <div class="hero-cta-row">
-            <a class="tombol besar" href="#zona">🎈 Pilih sesuai usia</a>
-            <a class="tombol besar ghost" href="#produk">Lihat semua 👀</a>
+            <a class="tombol besar" href="#produk">Jelajahi produk</a>
+            <a class="tombol besar ghost" href="#produk">Lihat semua</a>
         </div>
         <div class="hero-stats">
-            <div class="hero-stat"><strong><?= count($produk) ?>+</strong><span>produk lucu</span></div>
-            <div class="hero-stat"><strong>3 zona</strong><span>usia main</span></div>
-            <div class="hero-stat"><strong>100%</strong><span>handmade 3D</span></div>
+            <div class="hero-stat"><strong><?= count($produk) ?>+</strong><span>Produk katalog</span></div>
+            <div class="hero-stat"><strong><?= count($kategori_meta) ?></strong><span>Kategori bentuk</span></div>
+            <div class="hero-stat"><strong>4.9/5</strong><span>2.000+ ulasan</span></div>
         </div>
     </div>
-    <div class="hero-gambar" aria-hidden="true">
-        <span class="hero-blob"></span>
-        <span class="orbit"></span>
-        <img class="maskot" src="/images/aldi-maskot.svg" alt="" width="220" height="220">
-        <span class="kubus k1"></span><span class="kubus k2"></span><span class="kubus k3"></span>
-        <span class="hero-sticker s1">🌟 Terlaris!</span>
-        <span class="hero-sticker s2">🎨 pastel edition</span>
+    <div class="hero-gambar">
+        <div class="hero-carousel" id="heroCarousel" aria-roledescription="carousel" aria-label="Produk unggulan">
+            <div class="hero-viewport">
+                <div class="hero-track" id="heroTrack">
+                    <?php foreach ($hero_produk as $i => $hp):
+                        $hp_kat = $hp['kategori'][0] ?? 'semua';
+                        $hp_kat_label = $kategori[$hp_kat] ?? $hp_kat;
+                    ?>
+                    <article class="hero-slide<?= $i === 0 ? ' aktif' : '' ?>" data-index="<?= $i ?>" aria-hidden="<?= $i === 0 ? 'false' : 'true' ?>">
+                        <a class="hero-slide-img" href="produk.php?id=<?= $hp['id'] ?>" tabindex="<?= $i === 0 ? '0' : '-1' ?>">
+                            <img src="<?= e(gambar_url($hp['gambar'])) ?>" alt="<?= e($hp['nama']) ?>">
+                            <?php if (!empty($hp['terlaris'])): ?><span class="stiker">Terlaris</span><?php endif; ?>
+                        </a>
+                        <div class="hero-slide-info">
+                            <div class="hero-slide-teks">
+                                <span class="hero-slide-kat"><?= e($hp_kat_label) ?></span>
+                                <strong><a href="produk.php?id=<?= $hp['id'] ?>"><?= e($hp['nama']) ?></a></strong>
+                            </div>
+                            <div class="hero-slide-side">
+                                <span class="hero-slide-harga"><?= rupiah($hp['harga']) ?></span>
+                                <a class="tombol kecil" href="produk.php?id=<?= $hp['id'] ?>">Lihat</a>
+                            </div>
+                        </div>
+                    </article>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+            <span class="hero-sticker s1" id="heroCounter">01 / 04</span>
+            <span class="hero-sticker s2">Pilihan terbaik</span>
+            <div class="hero-nav">
+                <button class="hero-arrow" id="heroPrev" aria-label="Produk sebelumnya">←</button>
+                <div class="hero-dots" role="tablist" aria-label="Pilih slide">
+                    <?php foreach ($hero_produk as $i => $hp): ?>
+                    <button class="hero-dot<?= $i === 0 ? ' aktif' : '' ?>" data-go="<?= $i ?>" role="tab" aria-label="Slide <?= $i + 1 ?>"></button>
+                    <?php endforeach; ?>
+                </div>
+                <button class="hero-arrow" id="heroNext" aria-label="Produk berikutnya">→</button>
+            </div>
+        </div>
     </div>
 </section>
 <div class="pita-info" aria-hidden="true">
-    <span class="pita-item"><i>🚚</i> Gratis bungkus kado</span>
-    <span class="pita-item"><i>🎨</i> Warna bisa custom</span>
-    <span class="pita-item"><i>🛡️</i> Aman untuk anak</span>
-    <span class="pita-item"><i>⭐</i> 4.9 dari 2.000+ ulasan</span>
+    <span class="pita-item"><i>—</i> Bungkus kado gratis</span>
+    <span class="pita-item"><i>—</i> Custom warna & bentuk</span>
+    <span class="pita-item"><i>—</i> Finishing rapi & presisi</span>
+    <span class="pita-item"><i>—</i> Rating 4.9 dari 2.000+ ulasan</span>
 </div>
 <?php endif; ?>
-
-<section class="zona" id="zona" aria-label="Pilih sesuai usia">
-    <?php
-    $ikon_zona = ['balita' => '🧸', 'anak' => '🚀', 'remaja' => '🎧'];
-    foreach ($usia as $kunci => $z): ?>
-        <a class="zona-kartu warna-<?= e($z['warna']) ?> <?= $u === $kunci ? 'aktif' : '' ?>"
-           href="<?= e($u === $kunci ? url_daftar(['usia' => '']) : url_daftar(['usia' => $kunci])) ?>">
-            <span class="zona-top">
-                <span class="zona-ikon"><?= $ikon_zona[$kunci] ?? '✨' ?></span>
-                <span class="zona-rentang"><?= e($z['rentang']) ?></span>
-            </span>
-            <strong class="zona-judul"><?= e($z['label']) ?></strong>
-            <span class="zona-ket"><?= e($z['ket']) ?></span>
-            <span class="zona-panah"><i>→</i> <?= $u === $kunci ? 'Klik lagi buat reset' : 'Yuk intip!' ?></span>
-        </a>
-    <?php endforeach; ?>
-</section>
 
 <div class="chip-baris" id="produk" role="tablist">
     <?php foreach ($kategori as $kunci => $label): ?>
@@ -111,11 +133,10 @@ require __DIR__ . '/includes/header.php';
 
 <div class="bar-urut">
     <span class="info-hasil">
-        <?= count($hasil) ?> produk<?= $u !== '' ? ' untuk ' . e($usia[$u]['label']) : '' ?><?= $q !== '' ? ' dengan kata &ldquo;' . e($q) . '&rdquo;' : '' ?>
+        <?= count($hasil) ?> produk<?= $kat !== 'semua' ? ' · ' . e($kategori[$kat]) : '' ?><?= $q !== '' ? ' dengan kata &ldquo;' . e($q) . '&rdquo;' : '' ?>
     </span>
     <form method="get" action="index.php">
         <input type="hidden" name="kategori" value="<?= e($kat) ?>">
-        <?php if ($u !== ''): ?><input type="hidden" name="usia" value="<?= e($u) ?>"><?php endif; ?>
         <?php if ($q !== ''): ?><input type="hidden" name="q" value="<?= e($q) ?>"><?php endif; ?>
         <label for="urut">Urutkan:</label>
         <select name="urut" id="urut" onchange="this.form.submit()">
@@ -130,24 +151,27 @@ require __DIR__ . '/includes/header.php';
 <?php if (!$hasil): ?>
     <div class="kosong">
         <img src="/images/aldi-maskot.svg" alt="" width="90" height="90">
-        <p>Yahh, belum ada yang cocok 🥺 Coba kata lain atau lihat semua produk yang gemas-gemas!</p>
-        <a class="tombol" href="index.php#produk">✨ Lihat semua produk</a>
+        <p>Tidak ada produk yang cocok. Coba kata kunci lain atau tampilkan semua katalog.</p>
+        <a class="tombol" href="index.php#produk">Lihat semua produk</a>
     </div>
 <?php else: ?>
     <section class="grid-produk">
-        <?php foreach ($hasil as $p): $z = $usia[$p['usia']]; ?>
+        <?php foreach ($hasil as $p):
+            $warna = $p['warna'] ?? 'matahari';
+            $kat_utama = $p['kategori'][0] ?? 'semua';
+            $kat_label = $kategori[$kat_utama] ?? $kat_utama;
+        ?>
             <article class="kartu reveal">
-                <a class="kartu-gambar warna-<?= e($z['warna']) ?>" href="produk.php?id=<?= $p['id'] ?>">
-                    <?php if ($p['terlaris']): ?><span class="stiker">🌟 Terlaris!</span><?php endif; ?>
-                    <span class="kartu-hati" aria-hidden="true">💗</span>
+                <a class="kartu-gambar warna-<?= e($warna) ?>" href="produk.php?id=<?= $p['id'] ?>">
+                    <?php if ($p['terlaris']): ?><span class="stiker">Terlaris</span><?php endif; ?>
                     <img src="<?= e(gambar_url($p['gambar'])) ?>" alt="<?= e($p['nama']) ?>" loading="lazy">
                 </a>
                 <div class="kartu-isi">
-                    <span class="tag-usia warna-<?= e($z['warna']) ?>">✨ <?= e($z['label']) ?> &middot; <?= e($z['rentang']) ?></span>
+                    <span class="tag-usia warna-<?= e($warna) ?>"><?= e($kat_label) ?></span>
                     <h3 class="kartu-judul"><a href="produk.php?id=<?= $p['id'] ?>"><?= e($p['nama']) ?></a></h3>
                     <div class="kartu-meta">
                         <span class="penjual"><span class="avatar"><?= e(mb_strtoupper(mb_substr($p['penjual'], 0, 1))) ?></span><?= e($p['penjual']) ?></span>
-                        <span class="statistik">❤ <?= ringkas($p['suka']) ?></span>
+                        <span class="statistik"><?= ringkas($p['suka']) ?> suka</span>
                     </div>
                     <div class="kartu-bawah">
                         <strong class="harga"><?= rupiah($p['harga']) ?></strong>
@@ -155,7 +179,7 @@ require __DIR__ . '/includes/header.php';
                             <input type="hidden" name="csrf" value="<?= csrf_token() ?>">
                             <input type="hidden" name="aksi" value="tambah">
                             <input type="hidden" name="id" value="<?= $p['id'] ?>">
-                            <button class="tombol kecil" type="submit">+ 🛒</button>
+                            <button class="tombol kecil" type="submit">+ Keranjang</button>
                         </form>
                     </div>
                 </div>

@@ -77,6 +77,64 @@
         revealEls.forEach(function (el) { el.classList.add('muncul'); });
     }
 
+    // Hero carousel: 4 produk unggulan
+    (function () {
+        var carousel = document.getElementById('heroCarousel');
+        var track = document.getElementById('heroTrack');
+        if (!carousel || !track) return;
+        var slides = track.querySelectorAll('.hero-slide');
+        var dots = carousel.querySelectorAll('.hero-dot');
+        var prev = document.getElementById('heroPrev');
+        var next = document.getElementById('heroNext');
+        var counter = document.getElementById('heroCounter');
+        var total = slides.length;
+        var idx = 0;
+        var timer = null;
+        function pad(n) { return (n < 10 ? '0' : '') + n; }
+        function go(i) {
+            idx = (i + total) % total;
+            track.style.transform = 'translateX(-' + (idx * 100) + '%)';
+            slides.forEach(function (s, k) {
+                s.classList.toggle('aktif', k === idx);
+                s.setAttribute('aria-hidden', k === idx ? 'false' : 'true');
+                var link = s.querySelector('.hero-slide-img');
+                if (link) link.setAttribute('tabindex', k === idx ? '0' : '-1');
+            });
+            dots.forEach(function (d, k) { d.classList.toggle('aktif', k === idx); });
+            if (counter) counter.textContent = pad(idx + 1) + ' / ' + pad(total);
+        }
+        function auto() {
+            stop();
+            timer = setInterval(function () { go(idx + 1); }, 5000);
+        }
+        function stop() { if (timer) { clearInterval(timer); timer = null; } }
+        if (prev) prev.addEventListener('click', function () { go(idx - 1); auto(); });
+        if (next) next.addEventListener('click', function () { go(idx + 1); auto(); });
+        dots.forEach(function (d) {
+            d.addEventListener('click', function () {
+                go(parseInt(d.getAttribute('data-go'), 10) || 0);
+                auto();
+            });
+        });
+        carousel.addEventListener('mouseenter', stop);
+        carousel.addEventListener('mouseleave', auto);
+        carousel.addEventListener('focusin', stop);
+        carousel.addEventListener('focusout', auto);
+        var tx = null;
+        track.addEventListener('touchstart', function (ev) {
+            tx = ev.touches[0].clientX;
+        }, { passive: true });
+        track.addEventListener('touchend', function (ev) {
+            if (tx === null) return;
+            var dx = ev.changedTouches[0].clientX - tx;
+            if (Math.abs(dx) > 40) go(idx + (dx < 0 ? 1 : -1));
+            tx = null;
+            auto();
+        }, { passive: true });
+        go(0);
+        auto();
+    })();
+
     // Galeri thumbs: klik B/C/D untuk ganti gambar utama
     var thumbs = document.querySelectorAll('.thumb-btn');
     var gambarUtamaPre = document.getElementById('gambarUtama');
@@ -114,19 +172,13 @@
         document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape') tutupBox(); });
     }
 
-    // Hati melayang saat klik tombol + keranjang
+    // Micro-feedback: tombol keranjang berdenyut halus saat diklik
     document.querySelectorAll('.kartu form button, .form-beli button[type=submit]').forEach(function (btn) {
-        btn.addEventListener('click', function (ev) {
-            var hati = document.createElement('span');
-            hati.textContent = ['💖', '✨', '🌟', '🎈'][Math.floor(Math.random() * 4)];
-            hati.style.cssText = 'position:fixed;z-index:9999;pointer-events:none;font-size:22px;left:' +
-                ev.clientX + 'px;top:' + ev.clientY + 'px;transition:all .8s ease-out;';
-            document.body.appendChild(hati);
-            requestAnimationFrame(function () {
-                hati.style.transform = 'translateY(-70px) rotate(' + (Math.random() * 60 - 30) + 'deg) scale(1.4)';
-                hati.style.opacity = '0';
-            });
-            setTimeout(function () { hati.remove(); }, 850);
+        btn.addEventListener('click', function () {
+            btn.animate(
+                [{ transform: 'scale(1)' }, { transform: 'scale(.96)' }, { transform: 'scale(1)' }],
+                { duration: 160 }
+            );
         });
     });
 })();
