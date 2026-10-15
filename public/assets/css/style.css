@@ -321,6 +321,7 @@ img{max-width:100%;display:block}
 .footer-maskot{width:50px;height:50px;border-radius:16px;background:linear-gradient(135deg,var(--pink),var(--lilac));display:grid;place-items:center;border:var(--bd);box-shadow:var(--sh-brutal-sm)}
 .footer-maskot img{width:32px;height:32px}
 .footer p{margin:0}
+.footer small{font-size:12px;color:var(--faint);font-weight:600}
 .footer strong{font-family:var(--font-judul);font-size:17px;color:var(--ink)}
 .footer-badges{display:flex;gap:8px;flex-wrap:wrap}
 .footer-badges span{background:var(--bg);border:1px solid #fff;padding:6px 13px;border-radius:999px;font-size:12px;font-weight:800;color:var(--ink);box-shadow:var(--shadow-sm)}
