@@ -12,7 +12,7 @@ $menu_aktif    = $menu_aktif ?? 'beranda';
     <title><?= e($judul_halaman) ?> | <?= e(NAMA_TOKO) ?></title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
     <link rel="icon" href="/images/aldi-maskot.svg" type="image/svg+xml">
     <link rel="stylesheet" href="/assets/css/style.css">
 </head>
