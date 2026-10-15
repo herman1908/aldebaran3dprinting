@@ -1,0 +1,80 @@
+/* =========================================================
+   Panel admin — Aldebaran3DPrinting
+   Gaya pastel glassmorphism senada dengan situs utama.
+   ========================================================= */
+
+/* Layout admin (body.halaman-admin) */
+body.halaman-admin{display:block}
+.admin-nav{display:flex;gap:6px;margin-left:auto;flex-wrap:wrap}
+.admin-nav a{font-weight:800;font-size:13px;padding:8px 14px;border-radius:999px;color:var(--muted);transition:all .13s}
+.admin-nav a:hover{background:rgba(255,255,255,.85);color:var(--ink);box-shadow:var(--sh-brutal-sm)}
+.admin-main{display:block;width:100%;max-width:none;margin:0;padding:0 0 64px}
+
+.admin-wrap{max-width:1120px;margin:26px auto 0;padding:0 clamp(14px,3vw,28px)}
+
+.admin-topbar{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:22px}
+.admin-judul h1{font-family:var(--font-judul);font-size:26px;font-weight:800}
+.admin-judul p{margin:2px 0 0;color:var(--muted);font-size:13.5px;font-weight:700}
+.admin-aksi{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+.admin-sukses,.admin-galat,.admin-peringatan{padding:13px 17px;border-radius:16px;font-weight:700;font-size:13.5px;margin-bottom:16px;border:var(--bd);box-shadow:var(--sh-brutal-sm)}
+.admin-sukses{background:linear-gradient(135deg,#DFF7E8,#E0F2FF);color:#1E6B3C}
+.admin-galat{background:#FFE9E7;color:#B3261E}
+.admin-peringatan{background:linear-gradient(135deg,#FFF7E3,#FFE9EF);color:#7A6030;border:2px dashed #EFD48A}
+.admin-peringatan.kecil{font-size:12.5px;padding:10px 13px;margin:8px 0}
+.admin-peringatan code,.info-env code{background:rgba(75,75,110,.1);padding:1px 6px;border-radius:6px}
+
+/* Tabel */
+.admin-tabel-bungkus{overflow-x:auto;background:rgba(255,255,255,.7);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border:1.5px solid rgba(255,255,255,.7);border-radius:22px;box-shadow:0 12px 40px rgba(75,75,110,.13), inset 0 1px 0 rgba(255,255,255,.9);padding:6px 14px}
+.admin-tabel{width:100%;border-collapse:collapse;min-width:760px}
+.admin-tabel thead th{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--faint);font-weight:800;padding:14px 10px;text-align:left;border-bottom:1px solid var(--line)}
+.admin-tabel tbody td{padding:13px 10px;border-bottom:1px solid var(--line-soft);vertical-align:middle;font-size:13.5px}
+.admin-tabel tbody tr:last-child td{border-bottom:0}
+.admin-kanan{text-align:right}
+.admin-baris-aksi{display:flex;gap:8px;justify-content:flex-end;align-items:center;flex-wrap:wrap}
+.admin-baris-aksi form{margin:0}
+.admin-kosong{text-align:center;color:var(--faint);padding:36px 10px !important;font-weight:700}
+.admin-gambar-sel img{width:64px;height:52px;object-fit:cover;border-radius:12px;border:var(--bd);box-shadow:var(--shadow-sm)}
+.admin-noimg{color:var(--faint)}
+.admin-sub{display:block;color:var(--faint);font-size:11.5px;font-weight:700;margin-top:2px}
+.admin-chip{display:inline-block;background:var(--bg);border:1px solid #fff;border-radius:999px;padding:2px 9px;font-size:11px;font-weight:800;color:var(--muted);margin:1px 2px;box-shadow:var(--shadow-sm)}
+.admin-toggle{display:inline-block;margin:0 3px 3px 0}
+.admin-pill{border:0;cursor:pointer;font:inherit;font-size:11px;font-weight:800;padding:4px 11px;border-radius:999px;background:var(--bg);color:var(--faint);box-shadow:inset 2px 2px 5px var(--shadow-dark), inset -2px -2px 5px var(--shadow-light);transition:all .13s}
+.admin-pill.on{background:linear-gradient(135deg,#FFB3C7,#C4A8FF);color:#fff;box-shadow:0 3px 8px rgba(191,199,222,.7)}
+
+/* Form */
+.admin-form-wrap{max-width:1120px}
+.admin-form{background:rgba(255,255,255,.7);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border:1.5px solid rgba(255,255,255,.7);border-radius:22px;box-shadow:0 12px 40px rgba(75,75,110,.13), inset 0 1px 0 rgba(255,255,255,.9);padding:24px}
+.admin-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:28px}
+.admin-kolom{min-width:0}
+.admin-label{display:block;font-weight:800;font-size:12.5px;margin:14px 0 6px;color:var(--ink)}
+.admin-label:first-child{margin-top:0}
+.admin-input,.admin-textarea,.admin-select{width:100%;padding:11px 14px;border-radius:14px;border:var(--bd);background:var(--bg);box-shadow:var(--sh-brutal-in);font:inherit;font-size:14px;color:var(--ink)}
+.admin-textarea{resize:vertical;min-height:90px}
+.admin-input:focus,.admin-textarea:focus{outline:3px solid var(--sky);outline-offset:1px}
+.admin-row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.admin-cek-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.admin-cek{display:flex;align-items:center;gap:8px;background:var(--bg);border:var(--bd);border-radius:12px;padding:8px 12px;font-size:12.5px;font-weight:700;cursor:pointer;box-shadow:var(--shadow-sm)}
+.admin-cek input{accent-color:var(--accent);width:16px;height:16px}
+.admin-cek-inline{display:flex;gap:12px;flex-wrap:wrap;margin-top:14px}
+
+/* Upload Cloudinary */
+.admin-upload{position:relative;border:2px dashed #C3CBE0;border-radius:18px;background:var(--bg);padding:6px;cursor:pointer;transition:border-color .15s}
+.admin-upload:hover{border-color:var(--accent)}
+.admin-file{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.admin-upload-inner{display:flex;flex-direction:column;align-items:center;gap:4px;padding:26px 14px;text-align:center;color:var(--muted);font-size:12.5px;font-weight:700;pointer-events:none}
+.admin-upload-ikon{font-size:24px;color:var(--accent)}
+.admin-preview{width:100%;max-height:220px;object-fit:contain;border-radius:12px;margin-top:6px;background:#fff}
+.admin-preview-kecil{width:120px;height:96px;object-fit:cover;border-radius:12px;border:var(--bd);box-shadow:var(--shadow-sm);margin-top:10px}
+.admin-progress{height:8px;border-radius:99px;background:var(--line);overflow:hidden;margin:8px 4px 4px}
+.admin-progress div{height:100%;width:0%;border-radius:99px;background:linear-gradient(90deg,#FFB3C7,#C4A8FF);transition:width .2s}
+.admin-simpan{margin-top:22px;width:100%}
+
+@media (max-width: 860px){
+    .admin-grid{grid-template-columns:1fr}
+    .admin-row2{grid-template-columns:1fr}
+}
+@media (max-width: 600px){
+    .admin-topbar{align-items:flex-start}
+    .admin-form{padding:16px}
+}

@@ -33,6 +33,34 @@ Jika `php` tidak dikenali, ubah isi file `.bat` menjadi `C:\xampp\php\php.exe -S
 
 Semua produk ada di `includes/data.php`. Taruh foto produk di `public/images/`, lalu tulis nama file-nya di kolom `gambar`.
 
+## Panel admin & Cloudinary
+
+Situs punya panel admin di **`/admin`** untuk menambah, mengedit, menghapus produk, serta mengunggah gambar langsung ke **Cloudinary**.
+
+### Menyiapkan environment variables
+
+Salin `.env.example` jadi `.env`, lalu isi:
+
+| Variabel | Isi |
+| --- | --- |
+| `ADMIN_PASSWORD` | Password login `/admin` (wajib) |
+| `CLOUDINARY_CLOUD_NAME` | Cloud name dari dashboard Cloudinary |
+| `CLOUDINARY_UPLOAD_PRESET` | Nama upload preset bertipe **Unsigned** |
+| `APP_SECRET` | Teks acak panjang untuk menandatangani cookie |
+
+Untuk lokal, file `.env` dibaca otomatis. Di **Vercel**, isi lewat **Project → Settings → Environment Variables**, lalu deploy ulang.
+
+### Cara kerja produk
+
+- Produk default ada di `includes/data.php`.
+- Setiap perubahan dari admin disimpan ke **`data/produk.json`** (file JSON, tanpa database).
+- Saat runtime: kalau `data/produk.json` ada, isinya dipakai; kalau tidak, pakai data default.
+- Karena filesystem Vercel serverless bersifat read-only, admin **berfungsi penuh secara lokal**. Agar perubahan tampil di Vercel, jalankan admin secara lokal, lalu **commit `data/produk.json`** dan push.
+
+### Upload gambar
+
+Di form admin, seret/klik gambar untuk diunggah langsung ke Cloudinary (unsigned preset). URL `secure_url` yang dikembalikan otomatis terisi ke kolom gambar. Produk dengan URL `https://...` akan menampilkan gambar dari Cloudinary; nama file lokal tetap diambil dari `public/images/`.
+
 ## Kredit foto produk
 
 Foto produk saat ini memakai foto berlisensi bebas (CC BY / CC BY-SA) yang ditemukan via

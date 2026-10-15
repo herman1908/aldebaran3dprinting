@@ -1,0 +1,298 @@
+[
+    {
+        "id": 1,
+        "nama": "Balok Susun Hewan Jumbo",
+        "penjual": "Aldebaran Studio",
+        "kategori": [
+            "games",
+            "pajangan",
+            "terlaris"
+        ],
+        "warna": "koral",
+        "harga": 48000,
+        "unduhan": 6200,
+        "suka": 5400,
+        "gambar": "balok-susun.jpg",
+        "terlaris": true,
+        "deskripsi": "Tiga balok besar bergambar wajah hewan yang bisa disusun jadi menara. Ukuran jumbo dan sudut membulat, tanpa bagian kecil yang bisa lepas.",
+        "unggulan": false,
+        "galeri": []
+    },
+    {
+        "id": 2,
+        "nama": "Krincingan Bintang Besar",
+        "penjual": "Aldebaran Studio",
+        "kategori": [
+            "pajangan",
+            "games"
+        ],
+        "warna": "koral",
+        "harga": 35000,
+        "unduhan": 3100,
+        "suka": 2800,
+        "gambar": "krincingan-bintang.jpg",
+        "terlaris": false,
+        "deskripsi": "Krincingan berbentuk bintang dengan gagang besar yang pas digenggam tangan kecil. Dicetak padat, tanpa komponen lepas.",
+        "unggulan": false,
+        "galeri": []
+    },
+    {
+        "id": 3,
+        "nama": "Puzzle Huruf & Angka Jumbo",
+        "penjual": "BelajarLayer",
+        "kategori": [
+            "games"
+        ],
+        "warna": "koral",
+        "harga": 55000,
+        "unduhan": 2700,
+        "suka": 2300,
+        "gambar": "puzzle-huruf.jpg",
+        "terlaris": false,
+        "deskripsi": "Puzzle huruf A–Z dan angka 0–9 dengan kepingan tebal dan mudah dipegang. Cocok untuk belajar mengenal huruf sambil bermain.",
+        "unggulan": false,
+        "galeri": []
+    },
+    {
+        "id": 4,
+        "nama": "NAME CLICKER CREATOR",
+        "penjual": "Aldebaran Studio",
+        "kategori": [
+            "clicker",
+            "terlaris",
+            "gantungan"
+        ],
+        "warna": "matahari",
+        "harga": 12000,
+        "unduhan": 9300,
+        "suka": 8100,
+        "gambar": "name-clicker-creator.jpeg",
+        "terlaris": true,
+        "unggulan": true,
+        "galeri": [
+            "name-clicker-creator.jpeg",
+            "name-clicker-creator_b.jpeg"
+        ],
+        "deskripsi": "Bikin namamu jadi fidget clicker yang bunyinya satisfying banget! Setiap huruf dicetak 3D tebal, warna pastel bisa pilih sendiri, dan tiap huruf bisa diklik-klik. Cocok untuk kado nama teman, dekor tas, atau koleksi di kamar. Harga mulai Rp12.000 untuk 1 huruf, tambah Rp4.000 per huruf berikutnya. Contoh: nama 5 huruf = Rp12.000 + (4 x Rp4.000) = Rp28.000. Tulis ejaan nama yang mau dibuat saat checkout ya!"
+    },
+    {
+        "id": 15,
+        "nama": "Cheese Fidget Clicker",
+        "penjual": "Aldebaran Studio",
+        "kategori": [
+            "clicker",
+            "terlaris",
+            "makanan"
+        ],
+        "warna": "matahari",
+        "harga": 35000,
+        "unduhan": 8900,
+        "suka": 8050,
+        "gambar": "cheese-fidget-clicker.jpeg",
+        "terlaris": false,
+        "unggulan": true,
+        "galeri": [
+            "cheese-fidget-clicker.jpeg",
+            "cheese-fidget-clicker_b.jpeg"
+        ],
+        "deskripsi": "Fidget clicker bentuk keju yang empuk diklik. Bikin tangan sibuk jadi tenang, cocok untuk main di rumah atau di sekolah."
+    },
+    {
+        "id": 16,
+        "nama": "Cloud Clicker",
+        "penjual": "Aldebaran Studio",
+        "kategori": [
+            "clicker",
+            "terlaris"
+        ],
+        "warna": "matahari",
+        "harga": 15999,
+        "unduhan": 8700,
+        "suka": 8000,
+        "gambar": "cloud-clicker.jpeg",
+        "terlaris": false,
+        "unggulan": true,
+        "galeri": [
+            "cloud-clicker.jpeg",
+            "cloud-clicker_b.jpeg",
+            "cloud-clicker_c.jpeg"
+        ],
+        "deskripsi": "Fidget clicker bentuk awan yang gemoy dan bunyinya satisfying. Empuk diklik-klik, cocok untuk fokus belajar, koleksi, atau kado teman."
+    },
+    {
+        "id": 5,
+        "nama": "Tempat Pensil Robot",
+        "penjual": "Aldebaran Studio",
+        "kategori": [
+            "dekor",
+            "figure"
+        ],
+        "warna": "matahari",
+        "harga": 38000,
+        "unduhan": 4800,
+        "suka": 3900,
+        "gambar": "pensil-robot.jpg",
+        "terlaris": false,
+        "deskripsi": "Robot lucu yang memegang pensil dan pulpen di kepalanya. Bikin meja belajar lebih rapi dan seru.",
+        "unggulan": false,
+        "galeri": []
+    },
+    {
+        "id": 6,
+        "nama": "Set Penyu & Teman Laut",
+        "penjual": "Aldebaran Studio",
+        "kategori": [
+            "figure",
+            "pajangan"
+        ],
+        "warna": "koral",
+        "harga": 45000,
+        "unduhan": 7000,
+        "suka": 6600,
+        "gambar": "penyu-laut.jpg",
+        "terlaris": false,
+        "deskripsi": "Penyu, ikan, dan kepiting dengan sendi yang bisa bergerak. Seru untuk main di bak mandi atau dikoleksi di rak.",
+        "unggulan": false,
+        "galeri": []
+    },
+    {
+        "id": 7,
+        "nama": "Kit Roda Gigi Ajaib",
+        "penjual": "Aldebaran Studio",
+        "kategori": [
+            "games",
+            "hobi"
+        ],
+        "warna": "ungu",
+        "harga": 68000,
+        "unduhan": 2200,
+        "suka": 2900,
+        "gambar": "roda-gigi.jpg",
+        "terlaris": false,
+        "deskripsi": "Satu set roda gigi warna-warni untuk belajar cara kerja putaran dan kecepatan. Susun sendiri, lalu putar dengan engkol.",
+        "unggulan": false,
+        "galeri": []
+    },
+    {
+        "id": 8,
+        "nama": "Jacket Holder Rak Pena",
+        "penjual": "Aldebaran Studio",
+        "kategori": [
+            "pajangan",
+            "dekor"
+        ],
+        "warna": "matahari",
+        "harga": 55000,
+        "unduhan": 2800,
+        "suka": 2400,
+        "gambar": "jacket-holder.jpg",
+        "terlaris": false,
+        "unggulan": false,
+        "deskripsi": "Lampu tidur berbentuk labu. Dicetak tipis agar cahaya lampu LED menembus dengan hangat. Lampu LED dijual terpisah."
+    },
+    {
+        "id": 9,
+        "nama": "Gantungan Kunci Nama Kustom",
+        "penjual": "RoboPrint3D",
+        "kategori": [
+            "gantungan",
+            "terlaris"
+        ],
+        "warna": "ungu",
+        "harga": 25000,
+        "unduhan": 8000,
+        "suka": 6500,
+        "gambar": "gantungan-kunci.jpg",
+        "terlaris": true,
+        "deskripsi": "Gantungan kunci dengan nama pilihanmu. Pilih warna dan font, cocok untuk tas sekolah atau kado teman.",
+        "unggulan": false,
+        "galeri": []
+    },
+    {
+        "id": 10,
+        "nama": "Dudukan Ponsel Lipat",
+        "penjual": "Aldebaran Studio",
+        "kategori": [
+            "hobi",
+            "dekor"
+        ],
+        "warna": "ungu",
+        "harga": 18000,
+        "unduhan": 7800,
+        "suka": 5000,
+        "gambar": "dudukan-ponsel.jpg",
+        "terlaris": true,
+        "deskripsi": "Dudukan ponsel yang bisa dilipat tipis dan muat di saku. Sudut layar bisa diatur untuk nonton atau video call.",
+        "unggulan": false,
+        "galeri": []
+    },
+    {
+        "id": 11,
+        "nama": "Rak Gantung Headset Gaming",
+        "penjual": "Aldebaran Studio",
+        "kategori": [
+            "dekor",
+            "hobi"
+        ],
+        "warna": "ungu",
+        "harga": 52000,
+        "unduhan": 3300,
+        "suka": 3700,
+        "gambar": "rak-headset.jpg",
+        "terlaris": false,
+        "deskripsi": "Rak untuk menggantung headset di pinggir meja. Kokoh, hemat tempat, dan bikin meja gaming lebih rapi.",
+        "unggulan": false,
+        "galeri": []
+    },
+    {
+        "id": 12,
+        "nama": "Stand Holder",
+        "penjual": "Aldebaran Studio",
+        "kategori": [
+            "pajangan",
+            "dekor"
+        ],
+        "warna": "koral",
+        "harga": 12000,
+        "unduhan": 5400,
+        "suka": 4100,
+        "gambar": "https://res.cloudinary.com/cu9n478a/image/upload/v1792058520/utysl7kgn2coxsdghu4m.jpg",
+        "terlaris": false,
+        "unggulan": false,
+        "deskripsi": "Multi fungsi Stand Holder."
+    },
+    {
+        "id": 13,
+        "nama": "Rak ATK Nama Custom",
+        "penjual": "Aldebaran Studio",
+        "kategori": [
+            "dekor"
+        ],
+        "warna": "koral",
+        "harga": 30000,
+        "unduhan": 3600,
+        "suka": 4600,
+        "gambar": "https://res.cloudinary.com/cu9n478a/image/upload/v1792058442/egif3z6ucx9e2zozo62k.jpg",
+        "terlaris": false,
+        "unggulan": false,
+        "deskripsi": "Rak ATK Nama Custom, bisa di pesan nama dan warna."
+    },
+    {
+        "id": 14,
+        "nama": "Filamen PLA+ 1 Kg",
+        "penjual": "Toko Filamen ID",
+        "kategori": [
+            "printer",
+            "hobi"
+        ],
+        "warna": "ungu",
+        "harga": 175000,
+        "unduhan": 0,
+        "suka": 3700,
+        "gambar": "filamen-pla.jpg",
+        "terlaris": false,
+        "deskripsi": "Filamen PLA+ diameter 1,75 mm, 1 kg. Cocok untuk belajar 3D printing. Disarankan dengan pendampingan orang dewasa.",
+        "unggulan": false,
+        "galeri": []
+    }
+]

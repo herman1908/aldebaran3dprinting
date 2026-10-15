@@ -23,6 +23,14 @@ $halaman = [
     '/index.php'      => 'index.php',
     '/produk.php'     => 'produk.php',
     '/keranjang.php'  => 'keranjang.php',
+
+    // Panel admin.
+    '/admin'          => 'admin/index.php',
+    '/admin/'         => 'admin/index.php',
+    '/admin/index.php'=> 'admin/index.php',
+    '/admin/login.php'=> 'admin/login.php',
+    '/admin/logout.php'=> 'admin/logout.php',
+    '/admin/edit.php' => 'admin/edit.php',
 ];
 
 chdir($akar);

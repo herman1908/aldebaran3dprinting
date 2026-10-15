@@ -1,0 +1,2 @@
+# Cegah akses langsung ke file data via web.
+Require all denied

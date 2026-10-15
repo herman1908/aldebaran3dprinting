@@ -6,7 +6,36 @@
  * Vercel menjalankan PHP sebagai fungsi serverless tanpa penyimpanan session.
  * Cookie keranjang ditandatangani dengan APP_SECRET agar tidak bisa dipalsukan.
  */
+
+/** Muat file .env di root proyek (untuk lokal). Env asli (Vercel) tidak ditimpa. */
+function muat_env_lokal(): void {
+    $path = dirname(__DIR__) . '/.env';
+    if (!is_file($path)) return;
+    foreach (file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $baris) {
+        $baris = trim($baris);
+        if ($baris === '' || $baris[0] === '#') continue;
+        $eq = strpos($baris, '=');
+        if ($eq === false) continue;
+        $kunci = trim(substr($baris, 0, $eq));
+        $nilai = trim(substr($baris, $eq + 1));
+        // Buang tanda kutip ganda/satuan di sekeliling nilai.
+        if (strlen($nilai) >= 2 && ($nilai[0] === '"' || $nilai[0] === "'") && $nilai[0] === $nilai[strlen($nilai) - 1]) {
+            $nilai = substr($nilai, 1, -1);
+        }
+        if ($kunci !== '' && getenv($kunci) === false) {
+            putenv("$kunci=$nilai");
+            $_ENV[$kunci] = $nilai;
+        }
+    }
+}
+muat_env_lokal();
+
 require_once __DIR__ . '/data.php';
+require_once __DIR__ . '/cloudinary.php';
+require_once __DIR__ . '/produk-store.php';
+
+// Muat produk dari JSON admin (jika ada), else default dari data.php.
+produk_muat_ke_global();
 
 const NAMA_TOKO = 'Aldebaran3DPrinting';
 
@@ -25,7 +54,13 @@ function ringkas(int $n): string {
     return (string)$n;
 }
 
+/**
+ * Bangun URL gambar produk.
+ * - URL absolut (Cloudinary / http) dipakai apa adanya.
+ * - Nama file lokal diarahkan ke /images/.
+ */
 function gambar_url(string $file): string {
+    if (gambar_adalah_url($file)) return $file;
     return '/images/' . rawurlencode($file);
 }
 
