@@ -124,7 +124,7 @@ require __DIR__ . '/includes/header.php';
 <?php endif; ?>
 
 <div class="chip-baris" id="produk" role="tablist">
-    <?php foreach ($kategori as $kunci => $label): ?>
+    <?php foreach (array_slice($kategori, 0, 8, true) as $kunci => $label): ?>
         <a class="chip <?= $kunci === $kat ? 'aktif' : '' ?>" href="<?= e(url_daftar(['kategori' => $kunci])) ?>">
             <?= e($label) ?>
         </a>
