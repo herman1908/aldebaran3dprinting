@@ -60,22 +60,38 @@ require __DIR__ . '/includes/header.php';
 
 <?php if (!$ada_filter): ?>
 <section class="hero">
+    <span class="hero-blob b1" aria-hidden="true"></span>
+    <span class="hero-blob b2" aria-hidden="true"></span>
+    <span class="hero-blob b3" aria-hidden="true"></span>
+    <span class="hero-doodle d1" aria-hidden="true">✦</span>
+    <span class="hero-doodle d2" aria-hidden="true">★</span>
+    <span class="hero-doodle d3" aria-hidden="true">♥</span>
+    <span class="hero-doodle d4" aria-hidden="true">✧</span>
+    <span class="hero-doodle d5" aria-hidden="true">✩</span>
+
     <div class="hero-teks">
-        <span class="hero-badge"><span class="dot">Custom</span> Warna dan bentuk bisa disesuaikan</span>
-        <h1>Studio cetak 3D untuk <span class="hl-pink">clicker</span>, <span class="hl-mint">figure</span> dan <span class="hl-sky">dekor kamar</span></h1>
-        <p>Setiap produk dicetak presisi dengan finishing rapi. Pilih kategori bentuk, tentukan warna, dan ajukan custom untuk kebutuhan personal maupun kado.</p>
+        <span class="hero-badge"><span class="dot">Fun</span> Warna &amp; bentuk bebas kamu atur sendiri</span>
+        <h1>Mainan 3D yang bikin kamar &amp; mood <span class="hl-grad">auto ceria!</span></h1>
+        <p>Clicker anti-bosan, figure gemas, sampai dekor kamar aesthetic. Dicetak presisi, warnanya bisa custom, dan siap bikin teman-teman kamu iri (dalam artian baik ya).</p>
         <div class="hero-cta-row">
-            <a class="tombol besar" href="#produk">Jelajahi produk</a>
-            <a class="tombol besar ghost" href="#produk">Lihat semua</a>
+            <a class="tombol besar" href="#produk">Gas jelajah <span aria-hidden="true">→</span></a>
+            <a class="tombol besar ghost" href="#produk">Ide custom</a>
         </div>
         <div class="hero-stats">
-            <div class="hero-stat"><strong><?= count($produk) ?>+</strong><span>Produk katalog</span></div>
+            <div class="hero-stat"><strong><?= count($produk) ?>+</strong><span>Produk lucu</span></div>
             <div class="hero-stat"><strong><?= count($kategori_meta) ?></strong><span>Kategori bentuk</span></div>
             <div class="hero-stat"><strong>4.9/5</strong><span>2.000+ ulasan</span></div>
         </div>
     </div>
+
     <div class="hero-gambar">
-        <div class="hero-carousel" id="heroCarousel" aria-roledescription="carousel" aria-label="Produk unggulan">
+        <span class="hero-tape t1" aria-hidden="true"></span>
+        <span class="hero-tape t2" aria-hidden="true"></span>
+        <div class="hero-carousel" id="heroCarousel" role="region" aria-roledescription="carousel" aria-label="Produk unggulan">
+            <div class="hero-carousel-bar">
+                <span class="hero-live"><i aria-hidden="true"></i> Lagi ngetren</span>
+                <span class="hero-counter" id="heroCounter"><?= sprintf('%02d / %02d', 1, max(1, count($hero_produk))) ?></span>
+            </div>
             <div class="hero-viewport">
                 <div class="hero-track" id="heroTrack">
                     <?php foreach ($hero_produk as $i => $hp):
@@ -84,35 +100,41 @@ require __DIR__ . '/includes/header.php';
                     ?>
                     <article class="hero-slide<?= $i === 0 ? ' aktif' : '' ?>" data-index="<?= $i ?>" aria-hidden="<?= $i === 0 ? 'false' : 'true' ?>">
                         <a class="hero-slide-img" href="produk.php?id=<?= $hp['id'] ?>" tabindex="<?= $i === 0 ? '0' : '-1' ?>">
-                            <img src="<?= e(gambar_url($hp['gambar'])) ?>" alt="<?= e($hp['nama']) ?>">
+                            <img src="<?= e(gambar_url($hp['gambar'])) ?>" alt="<?= e($hp['nama']) ?>" <?= $i === 0 ? 'fetchpriority="high"' : 'loading="lazy"' ?>>
                             <?php if (!empty($hp['terlaris'])): ?><span class="stiker">Terlaris</span><?php endif; ?>
+                            <span class="hero-slide-glare" aria-hidden="true"></span>
+                            <div class="hero-slide-overlay">
+                                <span class="hero-slide-kat"><?= e($hp_kat_label) ?></span>
+                                <strong class="hero-slide-nama"><?= e($hp['nama']) ?></strong>
+                            </div>
                         </a>
                         <div class="hero-slide-info">
-                            <div class="hero-slide-teks">
-                                <span class="hero-slide-kat"><?= e($hp_kat_label) ?></span>
-                                <strong><a href="produk.php?id=<?= $hp['id'] ?>"><?= e($hp['nama']) ?></a></strong>
-                            </div>
-                            <div class="hero-slide-side">
+                            <div>
+                                <span class="hero-slide-label">Mulai dari</span>
                                 <span class="hero-slide-harga"><?= rupiah($hp['harga']) ?></span>
-                                <a class="tombol kecil" href="produk.php?id=<?= $hp['id'] ?>">Lihat</a>
                             </div>
+                            <a class="tombol kecil hero-slide-cta" href="produk.php?id=<?= $hp['id'] ?>">Lihat <span aria-hidden="true">→</span></a>
                         </div>
                     </article>
                     <?php endforeach; ?>
                 </div>
             </div>
-            <span class="hero-sticker s1" id="heroCounter">01 / 04</span>
-            <span class="hero-sticker s2">Pilihan terbaik</span>
             <div class="hero-nav">
-                <button class="hero-arrow" id="heroPrev" aria-label="Produk sebelumnya">←</button>
+                <button class="hero-arrow" id="heroPrev" type="button" aria-label="Produk sebelumnya">←</button>
                 <div class="hero-dots" role="tablist" aria-label="Pilih slide">
                     <?php foreach ($hero_produk as $i => $hp): ?>
-                    <button class="hero-dot<?= $i === 0 ? ' aktif' : '' ?>" data-go="<?= $i ?>" role="tab" aria-label="Slide <?= $i + 1 ?>"></button>
+                    <button class="hero-dot<?= $i === 0 ? ' aktif' : '' ?>" type="button" data-go="<?= $i ?>" role="tab" aria-label="Slide <?= $i + 1 ?>"></button>
                     <?php endforeach; ?>
                 </div>
-                <button class="hero-arrow" id="heroNext" aria-label="Produk berikutnya">→</button>
+                <div class="hero-nav-kanan">
+                    <button class="hero-pause" id="heroPause" type="button" aria-label="Jeda slide otomatis" aria-pressed="false">❚❚</button>
+                    <button class="hero-arrow" id="heroNext" type="button" aria-label="Produk berikutnya">→</button>
+                </div>
             </div>
+            <div class="hero-progress" aria-hidden="true"><i id="heroProgress"></i></div>
         </div>
+        <span class="hero-sticker s1">100%<br>custom</span>
+        <span class="hero-sticker s2">★ gemas maksimal ★</span>
     </div>
 </section>
 <div class="pita-info" aria-hidden="true">

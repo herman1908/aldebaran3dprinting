@@ -58,7 +58,7 @@ require __DIR__ . '/includes/header.php';
         <div class="custom-notice">
             <strong>Butuh versi custom?</strong>
             <p>Produk ini dapat disesuaikan — hubungi WhatsApp untuk konfirmasi <b>desain, harga, dan estimasi pengerjaan</b>.</p>
-            <a class="tombol kecil" target="_blank" rel="noopener" href="https://wa.me/6281234567890?text=<?= rawurlencode('Halo! Saya mau tanya custom 3D print: ' . $p['nama']) ?>">Konsultasi via WhatsApp</a>
+            <a class="tombol kecil" target="_blank" rel="noopener" href="<?= e(wa_link('Halo! Saya mau tanya custom 3D print: ' . $p['nama'])) ?>">Konsultasi via WhatsApp</a>
         </div>
     </div>
     <div class="detail-info">

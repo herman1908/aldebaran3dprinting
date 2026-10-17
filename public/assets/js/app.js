@@ -87,10 +87,20 @@
         var prev = document.getElementById('heroPrev');
         var next = document.getElementById('heroNext');
         var counter = document.getElementById('heroCounter');
+        var progress = document.getElementById('heroProgress');
+        var pauseBtn = document.getElementById('heroPause');
         var total = slides.length;
         var idx = 0;
         var timer = null;
+        var paused = false;
+        if (!total) return;
         function pad(n) { return (n < 10 ? '0' : '') + n; }
+        function jalanProgress() {
+            if (!progress) return;
+            progress.classList.remove('jalan');
+            void progress.offsetWidth;
+            progress.classList.add('jalan');
+        }
         function go(i) {
             idx = (i + total) % total;
             track.style.transform = 'translateX(-' + (idx * 100) + '%)';
@@ -102,12 +112,24 @@
             });
             dots.forEach(function (d, k) { d.classList.toggle('aktif', k === idx); });
             if (counter) counter.textContent = pad(idx + 1) + ' / ' + pad(total);
+            jalanProgress();
         }
         function auto() {
             stop();
+            if (paused) return;
             timer = setInterval(function () { go(idx + 1); }, 5000);
         }
         function stop() { if (timer) { clearInterval(timer); timer = null; } }
+        function setPaused(p) {
+            paused = p;
+            carousel.classList.toggle('dijeda', p);
+            if (pauseBtn) {
+                pauseBtn.textContent = p ? '▶' : '❚❚';
+                pauseBtn.setAttribute('aria-pressed', p ? 'true' : 'false');
+                pauseBtn.setAttribute('aria-label', p ? 'Putar slide otomatis' : 'Jeda slide otomatis');
+            }
+            if (p) stop(); else auto();
+        }
         if (prev) prev.addEventListener('click', function () { go(idx - 1); auto(); });
         if (next) next.addEventListener('click', function () { go(idx + 1); auto(); });
         dots.forEach(function (d) {
@@ -116,10 +138,13 @@
                 auto();
             });
         });
-        carousel.addEventListener('mouseenter', stop);
-        carousel.addEventListener('mouseleave', auto);
-        carousel.addEventListener('focusin', stop);
-        carousel.addEventListener('focusout', auto);
+        if (pauseBtn) pauseBtn.addEventListener('click', function () { setPaused(!paused); });
+        function hoverStop() { stop(); carousel.classList.add('dijeda'); }
+        function hoverStart() { if (!paused) carousel.classList.remove('dijeda'); auto(); }
+        carousel.addEventListener('mouseenter', hoverStop);
+        carousel.addEventListener('mouseleave', hoverStart);
+        carousel.addEventListener('focusin', hoverStop);
+        carousel.addEventListener('focusout', hoverStart);
         var tx = null;
         track.addEventListener('touchstart', function (ev) {
             tx = ev.touches[0].clientX;
@@ -172,8 +197,8 @@
         document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape') tutupBox(); });
     }
 
-    // Micro-feedback: tombol keranjang berdenyut halus saat diklik
-    document.querySelectorAll('.kartu form button, .form-beli button[type=submit]').forEach(function (btn) {
+    // Micro-feedback: tombol beli di halaman detail berdenyut halus saat diklik
+    document.querySelectorAll('.form-beli button[type=submit]').forEach(function (btn) {
         btn.addEventListener('click', function () {
             btn.animate(
                 [{ transform: 'scale(1)' }, { transform: 'scale(.96)' }, { transform: 'scale(1)' }],

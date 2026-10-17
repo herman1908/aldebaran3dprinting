@@ -33,11 +33,28 @@ muat_env_lokal();
 require_once __DIR__ . '/data.php';
 require_once __DIR__ . '/cloudinary.php';
 require_once __DIR__ . '/produk-store.php';
+require_once __DIR__ . '/ongkir.php';
 
 // Muat produk dari JSON admin (jika ada), else default dari data.php.
 produk_muat_ke_global();
 
 const NAMA_TOKO = 'Aldebaran3DPrinting';
+
+/** Nomor WhatsApp toko (format internasional). Bisa diganti lewat env WHATSAPP_TOKO. */
+const WHATSAPP_TOKO_DEFAULT = '6285694803867';
+
+function whatsapp_nomor(): string {
+    $n = preg_replace('/\D+/', '', (string)(getenv('WHATSAPP_TOKO') ?: WHATSAPP_TOKO_DEFAULT));
+    if ($n === '') $n = WHATSAPP_TOKO_DEFAULT;
+    if ($n[0] === '0')      $n = '62' . substr($n, 1);
+    elseif ($n[0] === '8')  $n = '62' . $n;
+    return $n;
+}
+
+/** Tautan wa.me; otomatis membuka WhatsApp Web / aplikasi. */
+function wa_link(string $teks = ''): string {
+    return 'https://wa.me/' . whatsapp_nomor() . ($teks !== '' ? '?text=' . rawurlencode($teks) : '');
+}
 
 function e(string $s): string {
     return htmlspecialchars($s, ENT_QUOTES, 'UTF-8');
@@ -125,6 +142,43 @@ function total_keranjang(): int {
         if ($p) $total += $p['harga'] * $qty;
     }
     return $total;
+}
+
+/**
+ * Susun teks pesanan untuk WhatsApp dari isi keranjang.
+ * $ongkir (opsional): ['kurir','layanan','tarif','destinasi'] dari ongkir_pilihan().
+ */
+function pesan_checkout_whatsapp(?array $ongkir = null): string {
+    $baris    = [];
+    $subtotal = 0;
+    $no       = 0;
+    foreach (keranjang() as $id => $qty) {
+        $p = cari_produk((int)$id);
+        if (!$p) continue;
+        $no++;
+        $sub       = $p['harga'] * $qty;
+        $subtotal += $sub;
+        $baris[]   = $no . '. ' . $p['nama'] . ' x' . $qty . ' = ' . rupiah($sub);
+    }
+
+    $lines   = [];
+    $lines[] = 'Halo ' . NAMA_TOKO . '! Saya mau pesan:';
+    $lines[] = '';
+    $lines   = array_merge($lines, $baris ?: ['(keranjang kosong)']);
+    $lines[] = '';
+    $lines[] = 'Subtotal: ' . rupiah($subtotal);
+    if ($ongkir) {
+        $tujuan  = !empty($ongkir['destinasi']) ? ' ke ' . $ongkir['destinasi'] : '';
+        $lines[] = 'Ongkir (' . $ongkir['kurir'] . ' ' . $ongkir['layanan'] . $tujuan . '): ' . rupiah((int)$ongkir['tarif']);
+        $lines[] = 'Total: ' . rupiah($subtotal + (int)$ongkir['tarif']);
+    } else {
+        $lines[] = 'Ongkir: belum dipilih';
+        $lines[] = 'Total: ' . rupiah($subtotal);
+    }
+    $lines[] = '';
+    $lines[] = 'Nama: ';
+    $lines[] = 'Alamat lengkap: ';
+    return implode("\n", $lines);
 }
 
 /* ---------- CSRF (double-submit cookie) ---------- */
