@@ -7,16 +7,31 @@
  * disimpan sebagai kolom `gambar` / `galeri` pada data produk.
  *
  * Isi environment variables di Vercel (atau .env lokal):
- *   CLOUDINARY_CLOUD_NAME   contoh: "aldo3d"
- *   CLOUDINARY_UPLOAD_PRESET contoh: "aldebaran_unsigned"
+ *   CLOUDINARY_CLOUD_NAME    contoh: "cu9n478a"
+ *   CLOUDINARY_UPLOAD_PRESET contoh: "kliovrbz"
+ *   CLOUDINARY_FOLDER        contoh: "ruang-3d"
+ *
+ * Catatan: nilai di bawah ini dipakai bila env tidak diisi, dan ikut tersimpan
+ * di git (tidak hilang saat ganti laptop). Cloud name & preset UNSIGNED memang
+ * tampil di sisi browser (window.CLOUDINARY), jadi bukan rahasia.
  */
 
+const CLOUDINARY_CLOUD_NAME_DEFAULT    = 'cu9n478a';
+const CLOUDINARY_UPLOAD_PRESET_DEFAULT = 'kliovrbz';
+
+/** Folder Media Library tujuan upload (auto dibuat saat upload pertama). */
+const CLOUDINARY_FOLDER_DEFAULT = 'ruang-3d';
+
 function cloudinary_cloud_name(): string {
-    return getenv('CLOUDINARY_CLOUD_NAME') ?: '';
+    return (string)(getenv('CLOUDINARY_CLOUD_NAME') ?: CLOUDINARY_CLOUD_NAME_DEFAULT);
 }
 
 function cloudinary_upload_preset(): string {
-    return getenv('CLOUDINARY_UPLOAD_PRESET') ?: '';
+    return (string)(getenv('CLOUDINARY_UPLOAD_PRESET') ?: CLOUDINARY_UPLOAD_PRESET_DEFAULT);
+}
+
+function cloudinary_folder(): string {
+    return (string)(getenv('CLOUDINARY_FOLDER') ?: CLOUDINARY_FOLDER_DEFAULT);
 }
 
 /** true jika Cloudinary sudah dikonfigurasi (cloud name & preset terisi). */

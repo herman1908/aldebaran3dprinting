@@ -177,6 +177,7 @@ $cloud_cfg = [
     'uploadUrl' => cloudinary_upload_url(),
     'cloudName' => cloudinary_cloud_name(),
     'preset'    => cloudinary_upload_preset(),
+    'folder'    => cloudinary_folder(),
     'siap'      => cloudinary_siap(),
 ];
 ?>

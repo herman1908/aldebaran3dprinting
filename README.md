@@ -44,8 +44,10 @@ Salin `.env.example` jadi `.env`, lalu isi:
 | Variabel | Isi |
 | --- | --- |
 | `ADMIN_PASSWORD` | Password login `/admin` (wajib) |
+| `WHATSAPP_TOKO` | Nomor WhatsApp tujuan checkout (opsional, default di `functions.php`) |
 | `CLOUDINARY_CLOUD_NAME` | Cloud name dari dashboard Cloudinary |
 | `CLOUDINARY_UPLOAD_PRESET` | Nama upload preset bertipe **Unsigned** |
+| `CLOUDINARY_FOLDER` | Folder Media Library tujuan upload (opsional, default `ruang-3d`) |
 | `APP_SECRET` | Teks acak panjang untuk menandatangani cookie |
 
 Untuk lokal, file `.env` dibaca otomatis. Di **Vercel**, isi lewat **Project → Settings → Environment Variables**, lalu deploy ulang.

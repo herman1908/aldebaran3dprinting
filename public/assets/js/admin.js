@@ -40,6 +40,11 @@
     var fd = new FormData();
     fd.append('file', file);
     fd.append('upload_preset', cfg.preset);
+    if (cfg.folder) {
+      // Folder Media Library tujuan (unsigned upload mengizinkan folder/asset_folder).
+      fd.append('folder', cfg.folder);
+      fd.append('asset_folder', cfg.folder);
+    }
 
     var xhr = new XMLHttpRequest();
     xhr.open('POST', cfg.uploadUrl, true);
@@ -73,6 +78,7 @@
         } catch (e) { /* abaikan jika bukan JSON */ }
         pesan += '\n\nCloud name : ' + (cfg.cloudName || '(kosong)');
         pesan += '\nPreset     : ' + (cfg.preset || '(kosong)');
+        pesan += '\nFolder     : ' + (cfg.folder || '(root)');
         pesan += '\n\nCek: cloud name & preset harus benar, dan preset bertipe UNSIGNED.';
         alert('Upload gagal. ' + pesan);
       }
