@@ -1,6 +1,35 @@
 <?php
 require_once __DIR__ . '/includes/functions.php';
 
+// Kirim pesan dari kolom chat (PRG: redirect lalu tampilkan notifikasi).
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['aksi'] ?? '') === 'kirim_pesan') {
+    $arah = 'index.php?pesan=galat-form#chat';
+    if (csrf_cek()) {
+        $nama  = trim((string)($_POST['nama'] ?? ''));
+        $hp    = trim((string)($_POST['hp'] ?? ''));
+        $email = trim((string)($_POST['email'] ?? ''));
+        $isi   = trim((string)($_POST['pesan'] ?? ''));
+
+        if ($nama === '') {
+            $arah = 'index.php?pesan=galat-nama#chat';
+        } elseif ($hp === '' && $email === '') {
+            $arah = 'index.php?pesan=galat-kontak#chat';
+        } elseif ($hp !== '' && !preg_match('/^[0-9+()\-\s]{6,20}$/', $hp)) {
+            $arah = 'index.php?pesan=galat-hp#chat';
+        } elseif ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $arah = 'index.php?pesan=galat-email#chat';
+        } elseif ($isi === '') {
+            $arah = 'index.php?pesan=galat-pesan#chat';
+        } elseif (mb_strlen($isi) > 2000) {
+            $arah = 'index.php?pesan=galat-panjang#chat';
+        } elseif (pesan_tambah(['nama' => $nama, 'hp' => $hp, 'email' => $email, 'pesan' => $isi])) {
+            $arah = 'index.php?pesan=terkirim#chat';
+        }
+    }
+    header('Location: ' . $arah);
+    exit;
+}
+
 $kat  = $_GET['kategori'] ?? 'semua';
 $q    = trim($_GET['q'] ?? '');
 $urut = $_GET['urut'] ?? 'populer';
@@ -214,6 +243,64 @@ require __DIR__ . '/includes/header.php';
                 </div>
             </article>
         <?php endforeach; ?>
+    </section>
+<?php endif; ?>
+
+<?php if (!$ada_filter): ?>
+    <?php
+    $chat_pesan = [
+        'terkirim'     => ['ok',  'Terima kasih! Pesanmu sudah masuk. Kami balas lewat WhatsApp atau email yang kamu cantumkan.'],
+        'galat-form'   => ['err', 'Sesi tidak valid. Muat ulang halaman lalu coba lagi.'],
+        'galat-nama'   => ['err', 'Nama wajib diisi ya.'],
+        'galat-kontak' => ['err', 'Isi minimal salah satu: nomor WhatsApp atau email.'],
+        'galat-hp'     => ['err', 'Nomor HP tidak valid. Contoh: 08123456789.'],
+        'galat-email'  => ['err', 'Alamat email tidak valid.'],
+        'galat-pesan'  => ['err', 'Pesannya masih kosong.'],
+        'galat-panjang' => ['err', 'Pesannya kepanjangan (maksimal 2000 karakter).'],
+    ];
+    $kode_chat = $_GET['pesan'] ?? '';
+    $chat_notif = $chat_pesan[$kode_chat] ?? null;
+    ?>
+    <section class="chat" id="chat">
+        <div class="chat-info">
+            <span class="chat-badge">💬 Tanya Admin</span>
+            <h2>Punya pertanyaan? Tinggalkan pesan</h2>
+            <p>Belum sempat atau tidak nyaman pakai WhatsApp Web? Tulis saja di sini. Pesanmu langsung masuk ke admin, dan kami balas lewat nomor HP atau email yang kamu isi.</p>
+            <ul class="chat-poin">
+                <li>Cocok buat tanya stok, custom nama, sampai estimasi ongkir.</li>
+                <li>Wajib isi nama + minimal salah satu kontak (HP atau email).</li>
+                <li>Dibalas pada jam kerja, rata-rata di hari yang sama.</li>
+            </ul>
+        </div>
+        <form class="chat-form" method="post" action="index.php#chat" novalidate>
+            <input type="hidden" name="csrf" value="<?= csrf_token() ?>">
+            <input type="hidden" name="aksi" value="kirim_pesan">
+
+            <?php if ($chat_notif): ?>
+                <div class="notif <?= e($chat_notif[0] === 'err' ? 'err' : '') ?> chat-notif"><?= e($chat_notif[1]) ?></div>
+            <?php endif; ?>
+
+            <div class="chat-field">
+                <label for="chat-nama">Nama</label>
+                <input type="text" id="chat-nama" name="nama" maxlength="80" placeholder="Nama kamu" required>
+            </div>
+            <div class="baris2">
+                <div class="chat-field">
+                    <label for="chat-hp">No. WhatsApp / HP</label>
+                    <input type="tel" id="chat-hp" name="hp" maxlength="20" placeholder="08xxxxxxxxxx">
+                </div>
+                <div class="chat-field">
+                    <label for="chat-email">Email</label>
+                    <input type="email" id="chat-email" name="email" maxlength="120" placeholder="nama@email.com">
+                </div>
+            </div>
+            <span class="chat-hint">Isi salah satu saja: nomor HP atau email (biar bisa kami balas).</span>
+            <div class="chat-field">
+                <label for="chat-pesan">Pesan</label>
+                <textarea id="chat-pesan" name="pesan" maxlength="2000" rows="4" placeholder="Tulis pertanyaan atau permintaanmu di sini..." required></textarea>
+            </div>
+            <button class="tombol" type="submit">Kirim pesan</button>
+        </form>
     </section>
 <?php endif; ?>
 
