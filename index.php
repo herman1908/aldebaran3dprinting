@@ -181,12 +181,6 @@ require __DIR__ . '/includes/header.php';
         <span class="hero-sticker s2">★ gemas maksimal ★</span>
     </div>
 </section>
-<div class="pita-info" aria-hidden="true">
-    <span class="pita-item"><i>—</i> Bungkus kado gratis</span>
-    <span class="pita-item"><i>—</i> Custom warna & bentuk</span>
-    <span class="pita-item"><i>—</i> Finishing rapi & presisi</span>
-    <span class="pita-item"><i>—</i> Rating 4.9 dari 2.000+ ulasan</span>
-</div>
 <?php endif; ?>
 
 <div class="bar-urut" id="produk">

@@ -15,7 +15,6 @@ function item_menu(string $kunci, string $href, string $ikon, string $label, str
     <nav>
         <?php
         item_menu('beranda',  'index.php',                   '⌂', 'Beranda',      $menu_aktif);
-        item_menu('semua',    'index.php?urut=terbaru',      '▦', 'Semua Produk', $menu_aktif);
         item_menu('terlaris', 'index.php?kategori=terlaris', '★', 'Terlaris',     $menu_aktif);
         ?>
 
@@ -28,7 +27,6 @@ function item_menu(string $kunci, string $href, string $ikon, string $label, str
         item_menu('dekor',     'index.php?kategori=dekor#produk',     '◧', 'Dekor Kamar',      $menu_aktif);
         item_menu('games',     'index.php?kategori=games#produk',     '▣', 'Games & Puzzle',   $menu_aktif);
         item_menu('hobi',    'index.php?kategori=hobi#produk',    '✚', 'Hobi & DIY',        $menu_aktif);
-        item_menu('printer', 'index.php?kategori=printer#produk', '◍', 'Filamen', $menu_aktif);
         ?>
 
 

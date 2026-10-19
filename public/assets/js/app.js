@@ -206,4 +206,52 @@
             );
         });
     });
+
+    function perbaruiLencana(jumlah) {
+        var el = document.getElementById('lencanaKeranjang');
+        if (!el) return;
+        jumlah = parseInt(jumlah, 10) || 0;
+        el.textContent = jumlah;
+        if (jumlah > 0) el.removeAttribute('hidden');
+        else el.setAttribute('hidden', '');
+        el.classList.remove('lonjak');
+        void el.offsetWidth;
+        el.classList.add('lonjak');
+    }
+
+    document.querySelectorAll('form').forEach(function (form) {
+        var aksi = form.querySelector('input[name="aksi"]');
+        if (!aksi || aksi.value !== 'tambah') return;
+
+        form.addEventListener('submit', function (ev) {
+            if (!window.fetch || !window.FormData) return;
+            ev.preventDefault();
+
+            var btn = form.querySelector('button[type=submit]');
+            if (btn && btn.disabled) return;
+            if (btn) btn.disabled = true;
+
+            fetch(form.getAttribute('action') || 'keranjang.php', {
+                method: 'POST',
+                body: new FormData(form),
+                headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+                credentials: 'same-origin'
+            }).then(function (res) {
+                return res.json();
+            }).then(function (data) {
+                if (!data || !data.ok) throw new Error('gagal');
+                perbaruiLencana(data.jumlah);
+                if (btn) {
+                    btn.animate(
+                        [{ transform: 'scale(1)' }, { transform: 'scale(.94)' }, { transform: 'scale(1)' }],
+                        { duration: 220 }
+                    );
+                    setTimeout(function () { btn.disabled = false; }, 600);
+                }
+            }).catch(function () {
+                if (btn) btn.disabled = false;
+                form.submit();
+            });
+        });
+    });
 })();

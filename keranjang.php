@@ -1,10 +1,17 @@
 <?php
 require_once __DIR__ . '/includes/functions.php';
 
+$ajax = strtolower($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '') === 'xmlhttprequest';
+
 // Proses aksi keranjang (POST + token CSRF)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!csrf_cek()) {
         http_response_code(400);
+        if ($ajax) {
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode(['ok' => false, 'pesan' => 'Permintaan tidak valid.']);
+            exit;
+        }
         exit('Permintaan tidak valid.');
     }
 
@@ -39,6 +46,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     simpan_keranjang($k);
+
+    if ($ajax) {
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode([
+            'ok'     => $kode !== '',
+            'jumlah' => jumlah_keranjang(),
+            'pesan'  => $kode === 'tambah' ? 'Produk ditambahkan ke keranjang.' : '',
+        ]);
+        exit;
+    }
 
     // Pertahankan pilihan ongkir setelah aksi ubah/hapus/tambah.
     $redirect = [];
