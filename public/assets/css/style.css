@@ -552,7 +552,13 @@ img{max-width:100%;display:block}
 .footer-faq details[open] summary::after{content:'\2212'}
 .footer-faq summary:focus-visible{outline:3px solid var(--sky);outline-offset:2px;border-radius:8px}
 .footer-faq details p{margin:0 0 14px;font-size:12.5px;line-height:1.6;color:var(--muted);font-weight:600}
-.ke-atas{position:fixed;right:20px;bottom:20px;width:46px;height:46px;z-index:40;background:#fff;color:var(--ink);border:var(--bd);box-shadow:var(--sh-brutal-sm);border-radius:50%;display:none;place-items:center;font-size:11px;font-weight:800}
+.wa-mengambang{position:fixed;right:20px;bottom:20px;z-index:45;width:54px;height:54px;display:grid;place-items:center;background:#25D366;color:#fff;border:var(--bd);border-radius:50%;box-shadow:var(--sh-brutal-sm);transition:transform .2s var(--ease-pop), background .2s ease}
+.wa-mengambang:hover,.wa-mengambang:focus-visible{background:#1EBE5B;transform:translateY(-3px) scale(1.04)}
+.wa-mengambang svg{display:block}
+.wa-tooltip{position:absolute;right:calc(100% + 12px);top:50%;transform:translateY(-50%) translateX(6px);background:var(--ink);color:#fff;font-family:var(--font-isi);font-size:12.5px;font-weight:700;line-height:1.35;padding:8px 12px;border-radius:12px;white-space:nowrap;box-shadow:var(--sh-brutal-sm);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .2s ease, transform .2s var(--ease-pop), visibility .2s}
+.wa-tooltip::after{content:'';position:absolute;left:100%;top:50%;transform:translateY(-50%);border:6px solid transparent;border-left-color:var(--ink)}
+.wa-mengambang:hover .wa-tooltip,.wa-mengambang:focus-visible .wa-tooltip{opacity:1;visibility:visible;transform:translateY(-50%) translateX(0)}
+.ke-atas{position:fixed;right:24px;bottom:88px;width:46px;height:46px;z-index:40;background:#fff;color:var(--ink);border:var(--bd);box-shadow:var(--sh-brutal-sm);border-radius:50%;display:none;place-items:center;font-size:11px;font-weight:800}
 .ke-atas.tampil{display:grid}
 .ke-atas:hover{background:var(--ink);color:#fff;transform:translateY(-2px)}
 
@@ -641,6 +647,9 @@ img{max-width:100%;display:block}
   .form-cari input{font-size:16px}
   .form-cari button{padding:8px 14px}
   .sidebar{width:min(84vw,300px)}
+  .wa-tooltip{right:0;top:auto;bottom:calc(100% + 10px);transform:translateY(6px);white-space:normal;width:max-content;max-width:calc(100vw - 48px)}
+  .wa-tooltip::after{left:auto;right:16px;top:100%;transform:none;border-left-color:transparent;border-top-color:var(--ink)}
+  .wa-mengambang:hover .wa-tooltip,.wa-mengambang:focus-visible .wa-tooltip{transform:translateY(0)}
 }
 /* HP sangat kecil (320px): tombol & statistik boleh wrap */
 @media (max-width: 400px){
