@@ -118,6 +118,100 @@ function produk_toggle(int $id, string $field): bool {
     return false;
 }
 
+/* ---------- Penghitung checkout (dasar "Terlaris" otomatis) ---------- */
+
+/** Path file JSON penghitung checkout. */
+function checkout_json_path(): string {
+    return dirname(__DIR__) . '/data/checkout.json';
+}
+
+/** Ambil peta id => jumlah checkout (dibaca sekali per request). */
+function checkout_data(): array {
+    static $cache = null;
+    if ($cache !== null) return $cache;
+    $path = checkout_json_path();
+    $data = [];
+    if (is_file($path)) {
+        $isi = json_decode((string)file_get_contents($path), true);
+        if (is_array($isi)) {
+            foreach ($isi as $id => $n) $data[(int)$id] = max(0, (int)$n);
+        }
+    }
+    return $cache = $data;
+}
+
+/**
+ * Tambah hitungan checkout tiap produk di keranjang.
+ * +1 per peristiwa checkout (bukan per qty), jadi mencerminkan
+ * "berapa customer yang checkout item ini". Tulis dengan lock supaya
+ * aman saat beberapa checkout bersamaan.
+ */
+function checkout_tambah(array $keranjang): void {
+    if (!$keranjang) return;
+    $path = checkout_json_path();
+    $dir  = dirname($path);
+    if (!is_dir($dir)) @mkdir($dir, 0775, true);
+
+    $fp = @fopen($path, 'c+');
+    if (!$fp) return;
+    @flock($fp, LOCK_EX);
+    $data = json_decode((string)stream_get_contents($fp), true);
+    if (!is_array($data)) $data = [];
+
+    $ubah = false;
+    foreach ($keranjang as $id => $qty) {
+        $id = (int)$id;
+        if ($id <= 0) continue;
+        $data[$id] = (int)($data[$id] ?? 0) + 1;
+        $ubah = true;
+    }
+    if ($ubah) {
+        @ftruncate($fp, 0);
+        @rewind($fp);
+        @fwrite($fp, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . "\n");
+        @fflush($fp);
+    }
+    @flock($fp, LOCK_UN);
+    @fclose($fp);
+}
+
+/** Jumlah checkout untuk satu produk. */
+function checkout_jumlah(int $id): int {
+    return checkout_data()[(int)$id] ?? 0;
+}
+
+/**
+ * Urutan id produk "Terlaris".
+ * - Produk yang dipin manual (field `terlaris`) selalu paling depan.
+ * - Lalu top-$limit produk dengan jumlah checkout terbanyak.
+ */
+function produk_terlaris_ids(int $limit = 8): array {
+    $ada = [];
+    foreach (produk_semua() as $p) $ada[(int)($p['id'] ?? 0)] = $p;
+
+    $ids = [];
+    foreach ($ada as $id => $p) {
+        if (!empty($p['terlaris'])) $ids[] = $id;
+    }
+
+    $data = checkout_data();
+    arsort($data);
+    $n = 0;
+    foreach ($data as $id => $jml) {
+        if ($n >= $limit) break;
+        $id = (int)$id;
+        if (!isset($ada[$id]) || in_array($id, $ids, true)) continue;
+        $ids[] = $id;
+        $n++;
+    }
+    return $ids;
+}
+
+/** Set id produk terlaris untuk pengecekan cepat (badge). */
+function produk_terlaris_set(): array {
+    return array_fill_keys(produk_terlaris_ids(), true);
+}
+
 /**
  * Normalisasi field produk: pastikan kategori/galeri bertipe array,
  * warna valid, dll. Dipakai saat memuat untuk ditampilkan.

@@ -45,7 +45,8 @@ usort($daftar, fn($a, $b) => ($b['id'] <=> $a['id']));
 
 $total     = count($daftar);
 $unggulan  = count(array_filter($daftar, fn($p) => !empty($p['unggulan'])));
-$terlaris  = count(array_filter($daftar, fn($p) => !empty($p['terlaris'])));
+$terlaris_ids = produk_terlaris_ids();
+$terlaris  = count($terlaris_ids);
 $siap_cloud = cloudinary_siap();
 
 $judul_halaman = 'Admin — Kelola Produk';
@@ -84,13 +85,14 @@ require __DIR__ . '/../includes/admin-head.php';
                     <th>Kategori</th>
                     <th>Harga</th>
                     <th>Suka</th>
+                    <th>Checkout</th>
                     <th>Status</th>
                     <th>Aksi</th>
                 </tr>
             </thead>
             <tbody>
                 <?php if (!$daftar): ?>
-                    <tr><td colspan="7" class="admin-kosong">Belum ada produk.</td></tr>
+                    <tr><td colspan="8" class="admin-kosong">Belum ada produk.</td></tr>
                 <?php endif; ?>
                 <?php foreach ($daftar as $p): ?>
                 <tr>
@@ -112,6 +114,7 @@ require __DIR__ . '/../includes/admin-head.php';
                     </td>
                     <td class="admin-kanan"><?= rupiah($p['harga']) ?></td>
                     <td class="admin-kanan"><?= ringkas($p['suka']) ?></td>
+                    <td class="admin-kanan"><?= (int)checkout_jumlah($p['id']) ?><span class="admin-sub"><?= in_array($p['id'], $terlaris_ids, true) ? ' · terlaris' : '' ?></span></td>
                     <td class="admin-kanan">
                         <form method="post" class="admin-toggle">
                             <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
@@ -125,7 +128,7 @@ require __DIR__ . '/../includes/admin-head.php';
                             <input type="hidden" name="aksi" value="toggle">
                             <input type="hidden" name="id" value="<?= $p['id'] ?>">
                             <input type="hidden" name="field" value="terlaris">
-                            <button type="submit" class="admin-pill <?= $p['terlaris'] ? 'on' : '' ?>">Terlaris</button>
+                            <button type="submit" class="admin-pill <?= $p['terlaris'] ? 'on' : '' ?>" title="Pin manual agar selalu masuk daftar Terlaris">Pin Terlaris</button>
                         </form>
                     </td>
                     <td class="admin-kanan admin-baris-aksi">

@@ -125,7 +125,7 @@ require __DIR__ . '/../includes/admin-head.php';
                 <label class="admin-label">Kategori Bentuk</label>
                 <div class="admin-cek-grid">
                     <?php foreach ($kategori as $kunci => $label):
-                        if (in_array($kunci, ['semua'], true)) continue; ?>
+                        if (in_array($kunci, ['semua', 'terlaris'], true)) continue; ?>
                         <label class="admin-cek">
                             <input type="checkbox" name="kategori[]" value="<?= e($kunci) ?>" <?= in_array($kunci, $f['kategori'], true) ? 'checked' : '' ?>>
                             <?= e($label) ?>
@@ -134,9 +134,10 @@ require __DIR__ . '/../includes/admin-head.php';
                 </div>
 
                 <div class="admin-cek-inline">
-                    <label class="admin-cek"><input type="checkbox" name="terlaris" <?= !empty($f['terlaris']) ? 'checked' : '' ?>> Terlaris</label>
+                    <label class="admin-cek"><input type="checkbox" name="terlaris" <?= !empty($f['terlaris']) ? 'checked' : '' ?>> Pin Terlaris (manual)</label>
                     <label class="admin-cek"><input type="checkbox" name="unggulan" <?= !empty($f['unggulan']) ? 'checked' : '' ?>> Unggulan (hero carousel)</label>
                 </div>
+                <span class="admin-sub">Tanpa pin manual, produk otomatis masuk "Terlaris" dari jumlah klik checkout terbanyak (top 8).</span>
             </div>
 
             <div class="admin-kolom">

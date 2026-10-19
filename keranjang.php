@@ -31,6 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $kurir  = trim((string)($_POST['kurir'] ?? ''));
         $ongkir = ($tujuan !== '' && $kurir !== '') ? ongkir_pilihan($tujuan, $kurir) : null;
 
+        checkout_tambah($k);                      // hitung untuk "Terlaris" otomatis
         $teks = pesan_checkout_whatsapp($ongkir); // susun dulu (butuh isi keranjang)
         simpan_keranjang([]);                     // baru kosongkan
         header('Location: ' . wa_link($teks));

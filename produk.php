@@ -26,6 +26,7 @@ $menu_aktif = $kat_utama;
 // Konvensi: gambar ke-2 dst boleh pakai akhiran _b, _c, _d, dst.
 $galeri = $p['galeri'] ?? [$p['gambar']];
 $label_galeri = ['Utama', 'B', 'C', 'D', 'E', 'F'];
+$terlaris_set = produk_terlaris_set();
 require __DIR__ . '/includes/header.php';
 ?>
 
@@ -39,7 +40,7 @@ require __DIR__ . '/includes/header.php';
     <div>
         <div class="detail-gambar warna-<?= e($warna) ?>">
             <div class="detail-badge-float">
-                <?php if ($p['terlaris']): ?><span>Terlaris</span><?php endif; ?>
+                <?php if (isset($terlaris_set[$p['id']])): ?><span>Terlaris</span><?php endif; ?>
                 <span><?= e($kat_label) ?></span>
             </div>
             <img id="gambarUtama" src="<?= e(gambar_url($galeri[0])) ?>" alt="<?= e($p['nama']) ?>" title="Klik untuk memperbesar">

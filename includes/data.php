@@ -43,7 +43,6 @@ $kategori = [
     'figure'    => 'Action Figure',
     'pajangan'  => 'Pajangan',
     'dekor'     => 'Dekor Kamar',
-    'makanan'   => 'Makanan',
     'games'     => 'Games & Puzzle',
     'hobi'      => 'Hobi & DIY',
     'printer'   => 'Printer & Filamen',
@@ -56,7 +55,6 @@ $kategori_meta = [
     'figure'    => ['ikon' => '🦸', 'ket' => 'Karakter action figure bersendi & kolektibel.',      'warna' => 'ungu'],
     'pajangan'  => ['ikon' => '🐢', 'ket' => 'Pajangan meja & rak yang gemoy.',                    'warna' => 'koral'],
     'dekor'     => ['ikon' => '🌷', 'ket' => 'Dekor kamar biar makin aesthetic.',                 'warna' => 'matahari'],
-    'makanan'   => ['ikon' => '🧀', 'ket' => 'Miniatur makanan yang lucu & detail.',              'warna' => 'ungu'],
     'games'     => ['ikon' => '🎮', 'ket' => 'Puzzle, balok & games yang interaktif.',            'warna' => 'koral'],
     'hobi'      => ['ikon' => '🛠️', 'ket' => 'DIY, gadget & aksesori buat hobi.',                 'warna' => 'matahari'],
     'printer'   => ['ikon' => '🖨️', 'ket' => 'Printer, filamen & kebutuhan cetak.',               'warna' => 'ungu'],
@@ -91,7 +89,7 @@ $produk = [
     ],
     [
         'id' => 15, 'nama' => 'Cheese Fidget Clicker', 'penjual' => 'Aldebaran Studio',
-        'kategori' => ['clicker', 'terlaris', 'makanan'], 'warna' => 'matahari', 'harga' => 35000, 'unduhan' => 8900, 'suka' => 8050,
+        'kategori' => ['clicker', 'terlaris'], 'warna' => 'matahari', 'harga' => 35000, 'unduhan' => 8900, 'suka' => 8050,
         'gambar' => 'cheese-fidget-clicker.jpeg', 'terlaris' => false, 'unggulan' => true,
         'galeri' => ['cheese-fidget-clicker.jpeg', 'cheese-fidget-clicker_b.jpeg'],
         'deskripsi' => 'Fidget clicker bentuk keju yang empuk diklik. Bikin tangan sibuk jadi tenang, cocok untuk main di rumah atau di sekolah.'

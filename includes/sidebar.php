@@ -26,15 +26,11 @@ function item_menu(string $kunci, string $href, string $ikon, string $label, str
         item_menu('figure',    'index.php?kategori=figure#produk',    '⬢', 'Action Figure',    $menu_aktif);
         item_menu('pajangan',  'index.php?kategori=pajangan#produk',  '❏', 'Pajangan',         $menu_aktif);
         item_menu('dekor',     'index.php?kategori=dekor#produk',     '◧', 'Dekor Kamar',      $menu_aktif);
-        item_menu('makanan',   'index.php?kategori=makanan#produk',   '⬣', 'Makanan',          $menu_aktif);
         item_menu('games',     'index.php?kategori=games#produk',     '▣', 'Games & Puzzle',   $menu_aktif);
+        item_menu('hobi',    'index.php?kategori=hobi#produk',    '✚', 'Hobi & DIY',        $menu_aktif);
+        item_menu('printer', 'index.php?kategori=printer#produk', '◍', 'Filamen', $menu_aktif);
         ?>
 
-        <h4>Lainnya</h4>
-        <?php
-        item_menu('hobi',    'index.php?kategori=hobi#produk',    '✚', 'Hobi & DIY',        $menu_aktif);
-        item_menu('printer', 'index.php?kategori=printer#produk', '⎙', 'Printer & Filamen', $menu_aktif);
-        ?>
 
         <h4>Kamu</h4>
         <?php

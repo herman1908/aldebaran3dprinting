@@ -517,6 +517,17 @@ img{max-width:100%;display:block}
 .footer strong{font-family:var(--font-judul);font-size:17px;color:var(--ink)}
 .footer-badges{display:flex;gap:8px;flex-wrap:wrap}
 .footer-badges span{background:var(--bg);border:1px solid #fff;padding:6px 13px;border-radius:999px;font-size:12px;font-weight:800;color:var(--ink);box-shadow:var(--shadow-sm)}
+.footer-faq{grid-column:1/-1;margin-top:8px;padding-top:22px;border-top:1px solid var(--line-soft)}
+.footer-faq h3{font-family:var(--font-judul);font-size:15.5px;color:var(--ink);margin:0 0 14px;text-align:center}
+.footer-faq-list{display:grid;grid-template-columns:1fr 1fr;gap:10px;text-align:left}
+.footer-faq details{background:var(--bg);border:var(--bd);border-radius:var(--r-sm);box-shadow:var(--shadow-sm);padding:0 16px;transition:transform .18s var(--ease-pop)}
+.footer-faq details[open]{background:var(--surface-2)}
+.footer-faq summary{cursor:pointer;list-style:none;padding:12px 0;font-weight:800;color:var(--ink);font-size:13px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.footer-faq summary::-webkit-details-marker{display:none}
+.footer-faq summary::after{content:'+';font-family:var(--font-judul);font-size:18px;line-height:1;color:var(--accent-ink);flex:none;transition:transform .2s var(--ease-pop)}
+.footer-faq details[open] summary::after{content:'\2212'}
+.footer-faq summary:focus-visible{outline:3px solid var(--sky);outline-offset:2px;border-radius:8px}
+.footer-faq details p{margin:0 0 14px;font-size:12.5px;line-height:1.6;color:var(--muted);font-weight:600}
 .ke-atas{position:fixed;right:20px;bottom:20px;width:46px;height:46px;z-index:40;background:#fff;color:var(--ink);border:var(--bd);box-shadow:var(--sh-brutal-sm);border-radius:50%;display:none;place-items:center;font-size:11px;font-weight:800}
 .ke-atas.tampil{display:grid}
 .ke-atas:hover{background:var(--ink);color:#fff;transform:translateY(-2px)}
@@ -559,6 +570,7 @@ img{max-width:100%;display:block}
   .zona{grid-template-columns:1fr 1fr;gap:10px}
   .topbar{padding:8px 14px;gap:10px}
   .tata-letak{padding:18px 14px 0;gap:0}
+  .footer-faq-list{grid-template-columns:1fr}
 }
 @media (max-width: 600px){
   .teks-keranjang{display:none}

@@ -7,6 +7,10 @@ $urut = $_GET['urut'] ?? 'populer';
 
 if (!isset($kategori[$kat])) $kat = 'semua';
 
+// "Terlaris" dihitung: pin manual + top-N checkout otomatis.
+$terlaris_ids = produk_terlaris_ids();
+$terlaris_set = array_fill_keys($terlaris_ids, true);
+
 /** Bangun URL daftar produk dengan mengganti sebagian parameter. */
 function url_daftar(array $ubah): string {
     global $kat, $q, $urut;
@@ -18,8 +22,12 @@ function url_daftar(array $ubah): string {
 }
 
 // Filter
-$hasil = array_filter($produk, function ($p) use ($kat, $q) {
-    if ($kat !== 'semua' && !in_array($kat, $p['kategori'], true)) return false;
+$hasil = array_filter($produk, function ($p) use ($kat, $q, $terlaris_set) {
+    if ($kat === 'terlaris') {
+        if (!isset($terlaris_set[$p['id']])) return false;
+    } elseif ($kat !== 'semua' && !in_array($kat, $p['kategori'], true)) {
+        return false;
+    }
     if ($q !== '' && stripos($p['nama'], $q) === false && stripos($p['penjual'], $q) === false) return false;
     return true;
 });
@@ -27,17 +35,24 @@ $hasil = array_filter($produk, function ($p) use ($kat, $q) {
 // Urutkan: produk 'unggulan' selalu dikunci di paling depan,
 // baru sisanya ikut mode urut (populer/terbaru/termurah/termahal).
 $hasil = array_values($hasil);
-usort($hasil, function ($a, $b) use ($urut) {
-    $ua = !empty($a['unggulan']) ? 1 : 0;
-    $ub = !empty($b['unggulan']) ? 1 : 0;
-    if ($ua !== $ub) return $ub <=> $ua;
-    switch ($urut) {
-        case 'termurah': return $a['harga'] <=> $b['harga'];
-        case 'termahal': return $b['harga'] <=> $a['harga'];
-        case 'terbaru':  return $b['id'] <=> $a['id'];
-        default:         return $b['suka'] <=> $a['suka'];
-    }
-});
+
+if ($kat === 'terlaris') {
+    // Halaman Terlaris: ikut urutan pin manual lalu checkout terbanyak.
+    $posisi = array_flip($terlaris_ids);
+    usort($hasil, fn($a, $b) => ($posisi[$a['id']] ?? PHP_INT_MAX) <=> ($posisi[$b['id']] ?? PHP_INT_MAX));
+} else {
+    usort($hasil, function ($a, $b) use ($urut) {
+        $ua = !empty($a['unggulan']) ? 1 : 0;
+        $ub = !empty($b['unggulan']) ? 1 : 0;
+        if ($ua !== $ub) return $ub <=> $ua;
+        switch ($urut) {
+            case 'termurah': return $a['harga'] <=> $b['harga'];
+            case 'termahal': return $b['harga'] <=> $a['harga'];
+            case 'terbaru':  return $b['id'] <=> $a['id'];
+            default:         return $b['suka'] <=> $a['suka'];
+        }
+    });
+}
 
 $ada_filter = $kat !== 'semua' || $q !== '';
 if ($kat !== 'semua') $menu_aktif = $kat;
@@ -101,7 +116,7 @@ require __DIR__ . '/includes/header.php';
                     <article class="hero-slide<?= $i === 0 ? ' aktif' : '' ?>" data-index="<?= $i ?>" aria-hidden="<?= $i === 0 ? 'false' : 'true' ?>">
                         <a class="hero-slide-img" href="produk.php?id=<?= $hp['id'] ?>" tabindex="<?= $i === 0 ? '0' : '-1' ?>">
                             <img src="<?= e(gambar_url($hp['gambar'])) ?>" alt="<?= e($hp['nama']) ?>" <?= $i === 0 ? 'fetchpriority="high"' : 'loading="lazy"' ?>>
-                            <?php if (!empty($hp['terlaris'])): ?><span class="stiker">Terlaris</span><?php endif; ?>
+                            <?php if (isset($terlaris_set[$hp['id']])): ?><span class="stiker">Terlaris</span><?php endif; ?>
                             <span class="hero-slide-glare" aria-hidden="true"></span>
                             <div class="hero-slide-overlay">
                                 <span class="hero-slide-kat"><?= e($hp_kat_label) ?></span>
@@ -145,15 +160,7 @@ require __DIR__ . '/includes/header.php';
 </div>
 <?php endif; ?>
 
-<div class="chip-baris" id="produk" role="tablist">
-    <?php foreach (array_slice($kategori, 0, 8, true) as $kunci => $label): ?>
-        <a class="chip <?= $kunci === $kat ? 'aktif' : '' ?>" href="<?= e(url_daftar(['kategori' => $kunci])) ?>">
-            <?= e($label) ?>
-        </a>
-    <?php endforeach; ?>
-</div>
-
-<div class="bar-urut">
+<div class="bar-urut" id="produk">
     <span class="info-hasil">
         <?= count($hasil) ?> produk<?= $kat !== 'semua' ? ' · ' . e($kategori[$kat]) : '' ?><?= $q !== '' ? ' dengan kata &ldquo;' . e($q) . '&rdquo;' : '' ?>
     </span>
@@ -185,7 +192,7 @@ require __DIR__ . '/includes/header.php';
         ?>
             <article class="kartu reveal">
                 <a class="kartu-gambar warna-<?= e($warna) ?>" href="produk.php?id=<?= $p['id'] ?>">
-                    <?php if ($p['terlaris']): ?><span class="stiker">Terlaris</span><?php endif; ?>
+                    <?php if (isset($terlaris_set[$p['id']])): ?><span class="stiker">Terlaris</span><?php endif; ?>
                     <img src="<?= e(gambar_url($p['gambar'])) ?>" alt="<?= e($p['nama']) ?>" loading="lazy">
                 </a>
                 <div class="kartu-isi">
