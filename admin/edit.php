@@ -23,9 +23,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $pilihan_warna = [];
         $nama_warna    = (array)($_POST['warna_nama'] ?? []);
         $hex_warna     = (array)($_POST['warna_hex'] ?? []);
-        foreach ($nama_warna as $i => $nm) {
+        $indeks_warna  = array_unique(array_merge(array_keys($nama_warna), array_keys($hex_warna)));
+        sort($indeks_warna);
+        foreach ($indeks_warna as $i) {
             $pilihan_warna[] = [
-                'nama' => (string)$nm,
+                'nama' => (string)($nama_warna[$i] ?? ''),
                 'hex'  => (string)($hex_warna[$i] ?? ''),
             ];
         }
@@ -154,7 +156,7 @@ require __DIR__ . '/../includes/admin-head.php';
                     <?php endforeach; ?>
                 </div>
                 <button type="button" class="tombol abu kecil" id="tambahWarna">+ Tambah warna</button>
-                <span class="admin-sub">Warna ini muncul sebagai pilihan di halaman detail produk. Kosongkan semua untuk memakai palet default.</span>
+                <span class="admin-sub">Warna ini muncul sebagai pilihan di halaman detail produk. Nama kosong atau sama akan diisi otomatis. Kosongkan semua untuk memakai palet default.</span>
 
                 <div class="admin-row2">
                     <div>

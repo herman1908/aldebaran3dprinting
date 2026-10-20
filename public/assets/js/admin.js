@@ -249,15 +249,31 @@
     return row;
   }
 
+  function namaWarnaBaru() {
+    var dipakai = {};
+    Array.prototype.forEach.call(editor.querySelectorAll('.warna-nama'), function (input) {
+      dipakai[input.value.trim().toLowerCase()] = true;
+    });
+    var nomor = editor.querySelectorAll('.warna-baris').length + 1;
+    var nama;
+    do {
+      nama = 'Warna ' + nomor++;
+    } while (dipakai[nama.toLowerCase()]);
+    return nama;
+  }
+
   tambah.addEventListener('click', function () {
     if (editor.querySelectorAll('.warna-baris').length >= MAX_WARNA) {
       alert('Maksimal ' + MAX_WARNA + ' pilihan warna.');
       return;
     }
-    var row = barisBaru('', '#FFB3C7');
+    var row = barisBaru(namaWarnaBaru(), '#FFB3C7');
     editor.appendChild(row);
     var input = row.querySelector('.warna-nama');
-    if (input) input.focus();
+    if (input) {
+      input.focus();
+      input.select();
+    }
   });
 
   editor.addEventListener('click', function (ev) {

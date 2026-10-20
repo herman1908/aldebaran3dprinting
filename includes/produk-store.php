@@ -47,11 +47,21 @@ function produk_warna_bersih($daftar): array {
 
         $nama = trim((string)($w['nama'] ?? ''));
         $hex  = strtoupper(ltrim(trim((string)($w['hex'] ?? '')), '#'));
-        if ($nama === '' || !preg_match('/^[0-9A-F]{6}$/', $hex)) continue;
+        if (!preg_match('/^[0-9A-F]{6}$/', $hex)) continue;
 
-        $nama  = mb_substr($nama, 0, 30);
+        if ($nama === '') $nama = 'Warna ' . (count($hasil) + 1);
+
+        $dasar = mb_substr($nama, 0, 30);
+        $nama  = $dasar;
         $kunci = mb_strtolower($nama);
-        if (isset($hasil[$kunci])) continue;
+        if (isset($hasil[$kunci])) {
+            $nomor = 2;
+            do {
+                $akhiran = ' ' . $nomor++;
+                $nama    = mb_substr($dasar, 0, 30 - mb_strlen($akhiran)) . $akhiran;
+                $kunci   = mb_strtolower($nama);
+            } while (isset($hasil[$kunci]));
+        }
 
         $hasil[$kunci] = ['nama' => $nama, 'hex' => '#' . $hex];
         if (count($hasil) >= 12) break;
