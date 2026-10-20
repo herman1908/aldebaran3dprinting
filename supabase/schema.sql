@@ -47,6 +47,19 @@ create table if not exists pesan (
 create index if not exists idx_pesan_belum
     on pesan (dibaca, waktu desc);
 
+/* Retensi pesan: aplikasi menghapus pesan berumur > 7 hari setiap kali
+   kotak masuk admin atau form chat diakses. Blok di bawah OPSIONAL bila
+   ingin pembersihan terjadwal walau situs sedang tidak dibuka.
+   Aktifkan ekstensi pg_cron dulu (Database > Extensions), lalu jalankan:
+
+create extension if not exists pg_cron;
+select cron.schedule(
+    'hapus-pesan-lama',
+    '0 3 * * *',
+    $$delete from pesan where waktu < now() - interval '7 days'$$
+);
+*/
+
 /* ---------- Statistik checkout (dasar "Terlaris") ---------- */
 create table if not exists checkout_stat (
     produk_id bigint primary key references produk(id) on delete cascade,

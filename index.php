@@ -3,30 +3,27 @@ require_once __DIR__ . '/includes/functions.php';
 
 // Kirim pesan dari kolom chat (PRG: redirect lalu tampilkan notifikasi).
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['aksi'] ?? '') === 'kirim_pesan') {
-    $arah = 'index.php?pesan=galat-form#chat';
-    if (csrf_cek()) {
-        $nama  = trim((string)($_POST['nama'] ?? ''));
-        $hp    = trim((string)($_POST['hp'] ?? ''));
-        $email = trim((string)($_POST['email'] ?? ''));
-        $isi   = trim((string)($_POST['pesan'] ?? ''));
+    $nama  = trim((string)($_POST['nama'] ?? ''));
+    $hp    = trim((string)($_POST['hp'] ?? ''));
+    $email = trim((string)($_POST['email'] ?? ''));
+    $isi   = trim((string)($_POST['pesan'] ?? ''));
 
-        if ($nama === '') {
-            $arah = 'index.php?pesan=galat-nama#chat';
-        } elseif ($hp === '' && $email === '') {
-            $arah = 'index.php?pesan=galat-kontak#chat';
-        } elseif ($hp !== '' && !preg_match('/^[0-9+()\-\s]{6,20}$/', $hp)) {
-            $arah = 'index.php?pesan=galat-hp#chat';
-        } elseif ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $arah = 'index.php?pesan=galat-email#chat';
-        } elseif ($isi === '') {
-            $arah = 'index.php?pesan=galat-pesan#chat';
-        } elseif (mb_strlen($isi) > 2000) {
-            $arah = 'index.php?pesan=galat-panjang#chat';
-        } elseif (pesan_tambah(['nama' => $nama, 'hp' => $hp, 'email' => $email, 'pesan' => $isi])) {
-            $arah = 'index.php?pesan=terkirim#chat';
-        } else {
-            $arah = 'index.php?pesan=galat-kirim#chat';
-        }
+    if ($nama === '') {
+        $arah = 'index.php?pesan=galat-nama#chat';
+    } elseif ($hp === '' && $email === '') {
+        $arah = 'index.php?pesan=galat-kontak#chat';
+    } elseif ($hp !== '' && !preg_match('/^[0-9+()\-\s]{6,20}$/', $hp)) {
+        $arah = 'index.php?pesan=galat-hp#chat';
+    } elseif ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $arah = 'index.php?pesan=galat-email#chat';
+    } elseif ($isi === '') {
+        $arah = 'index.php?pesan=galat-pesan#chat';
+    } elseif (mb_strlen($isi) > 2000) {
+        $arah = 'index.php?pesan=galat-panjang#chat';
+    } elseif (pesan_tambah(['nama' => $nama, 'hp' => $hp, 'email' => $email, 'pesan' => $isi])) {
+        $arah = 'index.php?pesan=terkirim#chat';
+    } else {
+        $arah = 'index.php?pesan=galat-kirim#chat';
     }
     header('Location: ' . $arah);
     exit;
@@ -246,7 +243,6 @@ require __DIR__ . '/includes/header.php';
     <?php
     $chat_pesan = [
         'terkirim'     => ['ok',  'Terima kasih! Pesanmu sudah masuk. Kami balas lewat WhatsApp atau email yang kamu cantumkan.'],
-        'galat-form'   => ['err', 'Sesi tidak valid. Muat ulang halaman lalu coba lagi.'],
         'galat-nama'   => ['err', 'Nama wajib diisi ya.'],
         'galat-kontak' => ['err', 'Isi minimal salah satu: nomor WhatsApp atau email.'],
         'galat-hp'     => ['err', 'Nomor HP tidak valid. Contoh: 08123456789.'],
@@ -270,7 +266,6 @@ require __DIR__ . '/includes/header.php';
             </ul>
         </div>
         <form class="chat-form" method="post" action="index.php#chat" novalidate>
-            <input type="hidden" name="csrf" value="<?= csrf_token() ?>">
             <input type="hidden" name="aksi" value="kirim_pesan">
 
             <?php if ($chat_notif): ?>

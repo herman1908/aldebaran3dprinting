@@ -18,6 +18,52 @@ function pesan_cache_reset(): void {
     unset($GLOBALS['pesan_cache']);
 }
 
+/** Masa simpan pesan: 7 hari. Pesan yang lebih lama dihapus otomatis. */
+const PESAN_MASA_SIMPAN = 7 * 24 * 60 * 60;
+
+/** Batas waktu pesan tertua yang masih disimpan (ISO 8601 UTC). */
+function pesan_batas_iso(): string {
+    return gmdate('Y-m-d\TH:i:s\Z', time() - PESAN_MASA_SIMPAN);
+}
+
+/**
+ * Hapus pesan yang umurnya sudah lewat 7 hari.
+ * Dipanggil sekali per request (dijaga static) agar tidak membebani database.
+ */
+function pesan_bersihkan_lama(): void {
+    static $sudah = false;
+    if ($sudah) return;
+    $sudah = true;
+
+    $batas = time() - PESAN_MASA_SIMPAN;
+
+    if (sb_aktif()) {
+        $r = sb_delete('pesan', 'waktu=lt.' . rawurlencode(pesan_batas_iso()));
+        if ($r['ok']) pesan_cache_reset();
+        return;
+    }
+
+    $path = pesan_json_path();
+    if (!is_file($path)) return;
+
+    $isi = json_decode((string)file_get_contents($path), true);
+    if (!is_array($isi)) return;
+
+    $ada_lama = false;
+    foreach ($isi as $m) {
+        if ((int)($m['waktu'] ?? 0) < $batas) { $ada_lama = true; break; }
+    }
+    if (!$ada_lama) return;
+
+    pesan_ubah(function (array &$daftar) use ($batas) {
+        $daftar = array_values(array_filter(
+            $daftar,
+            fn($m) => (int)($m['waktu'] ?? 0) >= $batas
+        ));
+        return true;
+    });
+}
+
 /** Baris Supabase -> format aplikasi. */
 function pesan_db_ke_app(array $m): array {
     $waktu = $m['waktu'] ?? null;
@@ -43,10 +89,16 @@ function pesan_db_ke_app(array $m): array {
 function pesan_semua(): array {
     if (array_key_exists('pesan_cache', $GLOBALS)) return $GLOBALS['pesan_cache'];
 
+    pesan_bersihkan_lama();
+
+    $batas = time() - PESAN_MASA_SIMPAN;
+
     if (sb_aktif()) {
         $r = sb_request('GET', 'pesan', null, 'select=*&order=waktu.desc,id.desc');
         if ($r['ok'] && is_array($r['data'])) {
-            return $GLOBALS['pesan_cache'] = array_map('pesan_db_ke_app', $r['data']);
+            $daftar = array_map('pesan_db_ke_app', $r['data']);
+            $daftar = array_values(array_filter($daftar, fn($m) => $m['waktu'] >= $batas));
+            return $GLOBALS['pesan_cache'] = $daftar;
         }
         // Supabase bermasalah: pakai file lokal bila ada.
     }
@@ -54,7 +106,9 @@ function pesan_semua(): array {
     $path = pesan_json_path();
     if (!is_file($path)) return $GLOBALS['pesan_cache'] = [];
     $isi = json_decode((string)file_get_contents($path), true);
-    return $GLOBALS['pesan_cache'] = is_array($isi) ? $isi : [];
+    if (!is_array($isi)) return $GLOBALS['pesan_cache'] = [];
+    $isi = array_values(array_filter($isi, fn($m) => (int)($m['waktu'] ?? 0) >= $batas));
+    return $GLOBALS['pesan_cache'] = $isi;
 }
 
 /**
@@ -95,6 +149,8 @@ function pesan_tambah(array $data): int {
         'dibaca' => false,
     ];
     if ($baru['pesan'] === '') return 0;
+
+    pesan_bersihkan_lama();
 
     if (sb_aktif()) {
         $baru['waktu'] = date('c');
@@ -173,10 +229,12 @@ function pesan_hapus(int $id): bool {
 
 /** Jumlah pesan yang belum dibaca. */
 function pesan_belum_dibaca(): int {
+    pesan_bersihkan_lama();
+
     if (sb_aktif()) {
-        $baris = sb_get('pesan', 'select=id&dibaca=eq.false');
-        if ($baris) return count($baris);
-        // gagal / kosong -> cek lokal di bawah
+        $r = sb_request('GET', 'pesan', null, 'select=id&dibaca=eq.false&waktu=gte.' . rawurlencode(pesan_batas_iso()));
+        if ($r['ok'] && is_array($r['data'])) return count($r['data']);
+        // gagal -> cek lokal di bawah
     }
 
     $n = 0;

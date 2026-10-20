@@ -6,10 +6,7 @@
     <p><strong><?= e(NAMA_TOKO) ?></strong><br>
     Studio cetak Aldebaran 3D Printing — clicker, gantungan, figure, pajangan & dekor kamar.</p>
     <div class="footer-badges">
-        <span>Custom warna</span>
-        <span>Custom bentuk</span>
-        <span>Custom ukuran</span>
-        <span>Rating 4.9/5</span>
+       
     </div>
 
     <small class="footer-copyright">All rights reserved. Developed by RoboKomputer. &copy; 2026</small>
