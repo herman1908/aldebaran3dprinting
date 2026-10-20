@@ -10,7 +10,12 @@
  */
 
 function sb_url(): string {
-    return rtrim((string)(getenv('SUPABASE_URL') ?: ''), '/');
+    $url = rtrim(trim((string)(getenv('SUPABASE_URL') ?: '')), '/');
+    // Terima URL walau pengguna menyertakan /rest/v1 (hindari jalur ganda).
+    if (str_ends_with($url, '/rest/v1')) {
+        $url = substr($url, 0, -strlen('/rest/v1'));
+    }
+    return rtrim($url, '/');
 }
 
 function sb_key(): string {

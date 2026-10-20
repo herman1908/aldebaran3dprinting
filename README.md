@@ -49,7 +49,7 @@ Salin `.env.example` jadi `.env`, lalu isi:
 | Variabel | Isi |
 | --- | --- |
 | `ADMIN_PASSWORD` | Password login awal `/admin` (cadangan bila database belum punya password) |
-| `SUPABASE_URL` | URL project Supabase (`https://xxxx.supabase.co`) |
+| `SUPABASE_URL` | URL project Supabase (`https://xxxx.supabase.co`, tanpa `/rest/v1`) |
 | `SUPABASE_SERVICE_KEY` | `service_role` key — **rahasia**, hanya untuk server |
 | `WHATSAPP_TOKO` | Nomor WhatsApp tujuan checkout (opsional, default di `functions.php`) |
 | `CLOUDINARY_CLOUD_NAME` | Cloud name dari dashboard Cloudinary |
