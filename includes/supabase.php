@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Klien Supabase (PostgREST) minimal tanpa library tambahan.
  *
