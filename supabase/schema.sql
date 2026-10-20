@@ -12,6 +12,7 @@ create table if not exists produk (
     penjual     text   not null default 'Aldebaran Studio',
     kategori    jsonb  not null default '[]'::jsonb,
     warna       text   not null default 'koral',
+    pilihan_warna jsonb not null default '[]'::jsonb,
     harga       integer not null default 0,
     unduhan     integer not null default 0,
     suka        integer not null default 0,
@@ -30,8 +31,11 @@ create table if not exists sosmed (
     platform  text not null default 'website',
     label     text not null default '',
     url       text not null default '',
-    dibuat    timestamptz not null default now()
+    dibuat      timestamptz not null default now()
 );
+
+/* Migrasi untuk database yang sudah ada (aman dijalankan berulang). */
+alter table produk add column if not exists pilihan_warna jsonb not null default '[]'::jsonb;
 
 /* ---------- Pesan / chat konsumen ---------- */
 create table if not exists pesan (

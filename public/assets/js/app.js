@@ -51,13 +51,18 @@
     var dots = document.querySelectorAll('.warna-dot');
     dots.forEach(function (d) {
         d.addEventListener('click', function () {
-            dots.forEach(function (x) { x.style.outline = 'none'; x.style.transform = ''; });
-            d.style.outline = '3px solid #8B5CF6';
-            d.style.outlineOffset = '2px';
-            d.style.transform = 'scale(1.2)';
+            dots.forEach(function (x) {
+                x.classList.remove('aktif');
+                x.setAttribute('aria-pressed', 'false');
+            });
+            d.classList.add('aktif');
+            d.setAttribute('aria-pressed', 'true');
+
+            var label = document.getElementById('warnaTerpilih');
+            var nama = d.getAttribute('data-nama');
+            if (label && nama) label.textContent = nama;
         });
     });
-    if (dots.length) dots[0].click();
 
     // Reveal on scroll — bikin kartu muncul satu-satu, aesthetic
     var revealEls = document.querySelectorAll('.reveal');
@@ -217,6 +222,106 @@
         el.classList.remove('lonjak');
         void el.offsetWidth;
         el.classList.add('lonjak');
+    }
+
+    // Keranjang: subtotal terakumulasi langsung saat jumlah diubah (tanpa Enter)
+    var tabelKeranjang = document.querySelector('.tabel-keranjang');
+    if (tabelKeranjang) {
+        var ringkasan = document.querySelector('.ringkasan');
+        var ongkirAktif = ringkasan ? (parseInt(ringkasan.getAttribute('data-ongkir'), 10) || 0) : 0;
+        var antreanSimpan = Promise.resolve();
+        var sibukSimpan = 0;
+        var timerQty = null;
+        var kotor = [];
+
+        function rupiahJs(n) {
+            return 'Rp ' + (Math.round(n) || 0).toLocaleString('id-ID');
+        }
+
+        function hitungUlang() {
+            var subtotal = 0;
+            tabelKeranjang.querySelectorAll('tr[data-harga]').forEach(function (tr) {
+                var input = tr.querySelector('input[name="qty"]');
+                if (!input) return;
+                var harga = parseInt(tr.getAttribute('data-harga'), 10) || 0;
+                var qty = parseInt(input.value, 10);
+                if (!qty || qty < 1) qty = 1;
+                if (qty > 99) qty = 99;
+                var sub = harga * qty;
+                subtotal += sub;
+                var sel = tr.querySelector('[data-subtotal-baris]');
+                if (sel) sel.textContent = rupiahJs(sub);
+            });
+
+            var elSub = document.getElementById('subtotalProduk');
+            if (elSub) elSub.textContent = rupiahJs(subtotal);
+            var elTotal = document.getElementById('totalBelanja');
+            if (elTotal) elTotal.textContent = rupiahJs(subtotal + ongkirAktif);
+        }
+
+        function tandaiKotor(form) {
+            if (kotor.indexOf(form) === -1) kotor.push(form);
+        }
+
+        function simpanQty(form) {
+            if (!window.fetch || !window.FormData) return;
+            var pos = kotor.indexOf(form);
+            if (pos !== -1) kotor.splice(pos, 1);
+
+            var data = new FormData(form);
+            sibukSimpan++;
+            antreanSimpan = antreanSimpan.then(function () {
+                return fetch(form.getAttribute('action') || 'keranjang.php', {
+                    method: 'POST',
+                    body: data,
+                    headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+                    credentials: 'same-origin'
+                }).then(function (res) {
+                    return res.json();
+                }).then(function (hasil) {
+                    if (hasil && hasil.ok) perbaruiLencana(hasil.jumlah);
+                });
+            }).catch(function () {
+                tandaiKotor(form);
+            }).then(function () {
+                sibukSimpan--;
+            });
+        }
+
+        function simpanSemuaQty() {
+            if (timerQty) { clearTimeout(timerQty); timerQty = null; }
+            kotor.slice().forEach(simpanQty);
+        }
+
+        tabelKeranjang.querySelectorAll('.form-qty input[name="qty"]').forEach(function (input) {
+            input.addEventListener('input', function () {
+                hitungUlang();
+                tandaiKotor(input.form);
+                if (timerQty) clearTimeout(timerQty);
+                timerQty = setTimeout(simpanSemuaQty, 450);
+            });
+            input.addEventListener('change', function () {
+                var qty = parseInt(input.value, 10);
+                if (!qty || qty < 1) qty = 1;
+                if (qty > 99) qty = 99;
+                input.value = qty;
+                hitungUlang();
+                tandaiKotor(input.form);
+                simpanSemuaQty();
+            });
+        });
+
+        // Tunggu jumlah tersimpan sebelum lanjut checkout.
+        document.querySelectorAll('form').forEach(function (form) {
+            var aksi = form.querySelector('input[name="aksi"]');
+            if (!aksi || aksi.value !== 'checkout') return;
+            form.addEventListener('submit', function (ev) {
+                if (!kotor.length && !sibukSimpan && !timerQty) return;
+                ev.preventDefault();
+                simpanSemuaQty();
+                antreanSimpan.then(function () { form.submit(); });
+            });
+        });
     }
 
     document.querySelectorAll('form').forEach(function (form) {

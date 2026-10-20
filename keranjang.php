@@ -48,11 +48,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     simpan_keranjang($k);
 
     if ($ajax) {
+        $subtotal = total_keranjang();
+        $tujuan   = trim((string)($_POST['tujuan'] ?? ''));
+        $kurir    = trim((string)($_POST['kurir'] ?? ''));
+        $ongkir   = ($tujuan !== '' && $kurir !== '') ? ongkir_pilihan($tujuan, $kurir) : null;
+        $tarif    = (int)($ongkir['tarif'] ?? 0);
+        $baris    = 0;
+        if (isset($k[$id])) {
+            $p = cari_produk($id);
+            if ($p) $baris = (int)$p['harga'] * (int)$k[$id];
+        }
+
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode([
-            'ok'     => $kode !== '',
-            'jumlah' => jumlah_keranjang(),
-            'pesan'  => $kode === 'tambah' ? 'Produk ditambahkan ke keranjang.' : '',
+            'ok'       => $aksi === 'ubah' || $kode !== '',
+            'jumlah'   => jumlah_keranjang(),
+            'id'       => $id,
+            'qty'      => (int)($k[$id] ?? 0),
+            'baris'    => $baris,
+            'subtotal' => $subtotal,
+            'ongkir'   => $tarif,
+            'total'    => $subtotal + $tarif,
+            'pesan'    => $kode === 'tambah' ? 'Produk ditambahkan ke keranjang.' : '',
         ]);
         exit;
     }
@@ -106,7 +123,7 @@ require __DIR__ . '/includes/header.php';
         <?php foreach (keranjang() as $id => $qty):
             $p = cari_produk((int)$id);
             if (!$p) continue; ?>
-            <tr>
+            <tr data-harga="<?= (int)$p['harga'] ?>">
                 <td class="sel-produk">
                     <img src="<?= e(gambar_url($p['gambar'])) ?>" alt="">
                     <a href="produk.php?id=<?= $p['id'] ?>"><?= e($p['nama']) ?></a>
@@ -123,7 +140,7 @@ require __DIR__ . '/includes/header.php';
                         <button class="tombol kecil abu" type="submit">Ubah</button>
                     </form>
                 </td>
-                <td><strong><?= rupiah($p['harga'] * $qty) ?></strong></td>
+                <td><strong data-subtotal-baris><?= rupiah($p['harga'] * $qty) ?></strong></td>
                 <td>
                     <form method="post">
                         <input type="hidden" name="csrf" value="<?= csrf_token() ?>">
@@ -214,11 +231,11 @@ require __DIR__ . '/includes/header.php';
         <?php endif; ?>
     </section>
 
-    <div class="ringkasan">
+    <div class="ringkasan" data-ongkir="<?= (int)$ongkir_pilih ?>">
         <div class="ringkasan-info">
-            <p>Total belanja: <strong class="harga-besar"><?= rupiah($total_akhir) ?></strong></p>
+            <p>Total belanja: <strong class="harga-besar" id="totalBelanja"><?= rupiah($total_akhir) ?></strong></p>
             <ul class="rincian-belanja">
-                <li><span>Subtotal produk</span><b><?= rupiah($subtotal) ?></b></li>
+                <li><span>Subtotal produk</span><b id="subtotalProduk"><?= rupiah($subtotal) ?></b></li>
                 <li<?= $opsi_terpilih ? '' : ' class="rincian-off"' ?>>
                     <span>Ongkir<?= $opsi_terpilih ? ' · ' . e($opsi_terpilih['kurir'] . ' ' . $opsi_terpilih['layanan']) : '' ?></span>
                     <b><?= $opsi_terpilih ? rupiah($ongkir_pilih) : 'Belum dipilih' ?></b>

@@ -24,7 +24,9 @@ $judul_halaman = $p['nama'];
 $menu_aktif = $kat_utama;
 // Galeri: pakai 'galeri' jika ada, fallback ke 'gambar' tunggal.
 // Konvensi: gambar ke-2 dst boleh pakai akhiran _b, _c, _d, dst.
-$galeri = $p['galeri'] ?? [$p['gambar']];
+$galeri = array_values(array_filter((array)($p['galeri'] ?? [])));
+if (!$galeri && ($p['gambar'] ?? '') !== '') $galeri = [$p['gambar']];
+if (!$galeri) $galeri = [''];
 $label_galeri = ['Utama', 'B', 'C', 'D', 'E', 'F'];
 $terlaris_set = produk_terlaris_set();
 require __DIR__ . '/includes/header.php';
@@ -73,16 +75,23 @@ require __DIR__ . '/includes/header.php';
         <p class="harga-besar"><?= rupiah($p['harga']) ?></p>
         <p><?= e($p['deskripsi']) ?></p>
 
+        <?php $pilihan_warna = $p['pilihan_warna'] ?? []; ?>
+        <?php if ($pilihan_warna): ?>
         <div class="warna-picker" aria-label="Pilih warna">
             <strong style="font-size:13.5px">Pilih warna:</strong>
-            <span class="warna-dot pink" title="Pink"></span>
-            <span class="warna-dot mint" title="Mint"></span>
-            <span class="warna-dot sky" title="Sky"></span>
-            <span class="warna-dot lilac" title="Lilac"></span>
-            <span class="warna-dot lemon" title="Lemon"></span>
+            <?php foreach ($pilihan_warna as $i => $w): ?>
+                <button type="button"
+                        class="warna-dot<?= $i === 0 ? ' aktif' : '' ?>"
+                        style="background:<?= e($w['hex']) ?>"
+                        data-nama="<?= e($w['nama']) ?>"
+                        title="<?= e($w['nama']) ?>"
+                        aria-label="<?= e($w['nama']) ?>"
+                        aria-pressed="<?= $i === 0 ? 'true' : 'false' ?>"></button>
+            <?php endforeach; ?>
         </div>
 
-        <p class="catatan">Varian warna dapat di-request tanpa biaya tambahan — cantumkan pada catatan checkout.</p>
+        <p class="catatan">Warna terpilih: <strong id="warnaTerpilih"><?= e($pilihan_warna[0]['nama']) ?></strong> — sebutkan pilihan ini pada catatan checkout.</p>
+        <?php endif; ?>
 
         <div class="tag-baris">
             <?php foreach ($p['kategori'] as $k): ?>

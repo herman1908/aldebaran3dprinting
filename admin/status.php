@@ -34,6 +34,7 @@ if ($aksi_uji === 'uji_tulis' || $aksi_uji === 'uji_tulis_produk') {
             'harga'     => 1,
             'kategori'  => [],
             'warna'     => 'koral',
+            'pilihan_warna' => produk_warna_default(),
             'galeri'    => [],
             'deskripsi' => 'baris uji status, dihapus otomatis',
             'terlaris'  => false,

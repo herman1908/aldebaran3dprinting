@@ -20,6 +20,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         $galeri_urls = array_values(array_unique(array_filter(array_map('trim', explode("\n", (string)($_POST['galeri_urls'] ?? ''))))));
 
+        $pilihan_warna = [];
+        $nama_warna    = (array)($_POST['warna_nama'] ?? []);
+        $hex_warna     = (array)($_POST['warna_hex'] ?? []);
+        foreach ($nama_warna as $i => $nm) {
+            $pilihan_warna[] = [
+                'nama' => (string)$nm,
+                'hex'  => (string)($hex_warna[$i] ?? ''),
+            ];
+        }
+
         $data = [
             'id'        => (int)($_POST['id'] ?? 0),
             'nama'      => (string)($_POST['nama'] ?? ''),
@@ -32,6 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'gambar'    => $galeri_urls[0] ?? '',
             'galeri'    => $galeri_urls,
             'deskripsi' => (string)($_POST['deskripsi'] ?? ''),
+            'pilihan_warna' => $pilihan_warna,
             'terlaris'  => isset($_POST['terlaris']),
             'unggulan'  => isset($_POST['unggulan']),
         ];
@@ -51,6 +62,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $galat .= ' Supabase belum terbaca di server ini (SUPABASE_URL/SUPABASE_SERVICE_KEY). Di Vercel, isi env lalu redeploy.';
             } elseif (sb_error_terakhir() !== '') {
                 $galat .= ' Detail: ' . sb_error_terakhir();
+                if (stripos(sb_error_terakhir(), 'pilihan_warna') !== false) {
+                    $galat .= ' Jalankan migrasi kolom pilihan_warna di Supabase (lihat supabase/schema.sql).';
+                }
             }
             $galat .= ' Buka menu Status untuk diagnostik.';
         }
@@ -62,6 +76,7 @@ $f = $edit ?: [
     'id' => 0, 'nama' => '', 'penjual' => 'Aldebaran Studio', 'kategori' => [],
     'warna' => 'koral', 'harga' => 0, 'unduhan' => 0, 'suka' => 0,
     'gambar' => '', 'galeri' => [], 'deskripsi' => '', 'terlaris' => false, 'unggulan' => false,
+    'pilihan_warna' => produk_warna_default(),
 ];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $galeri_urls    = array_values(array_unique(array_filter(array_map('trim', explode("\n", (string)($_POST['galeri_urls'] ?? ''))))));
@@ -75,6 +90,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $f['gambar']    = $galeri_urls[0] ?? '';
     $f['galeri']    = $galeri_urls;
     $f['deskripsi'] = (string)($_POST['deskripsi'] ?? '');
+    $f['pilihan_warna'] = $pilihan_warna ?? produk_warna_default();
     $f['terlaris']  = isset($_POST['terlaris']);
     $f['unggulan']  = isset($_POST['unggulan']);
 }
@@ -126,6 +142,19 @@ require __DIR__ . '/../includes/admin-head.php';
                         </select>
                     </div>
                 </div>
+
+                <label class="admin-label">Pilihan Warna di Detail Produk <span class="admin-label-note">maks. 12</span></label>
+                <div class="warna-editor" id="warnaEditor">
+                    <?php foreach ($f['pilihan_warna'] as $w): ?>
+                    <div class="warna-baris">
+                        <input type="color" class="warna-hex" name="warna_hex[]" value="<?= e($w['hex']) ?>" aria-label="Kode warna">
+                        <input type="text" class="admin-input warna-nama" name="warna_nama[]" maxlength="30" value="<?= e($w['nama']) ?>" placeholder="Nama warna">
+                        <button type="button" class="warna-hapus" aria-label="Hapus warna">✕</button>
+                    </div>
+                    <?php endforeach; ?>
+                </div>
+                <button type="button" class="tombol abu kecil" id="tambahWarna">+ Tambah warna</button>
+                <span class="admin-sub">Warna ini muncul sebagai pilihan di halaman detail produk. Kosongkan semua untuk memakai palet default.</span>
 
                 <div class="admin-row2">
                     <div>

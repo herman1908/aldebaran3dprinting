@@ -25,6 +25,41 @@ function checkout_cache_reset(): void {
     unset($GLOBALS['checkout_cache']);
 }
 
+/** Palet warna default yang tampil di halaman detail produk. */
+function produk_warna_default(): array {
+    return [
+        ['nama' => 'Pink',  'hex' => '#FFB3C7'],
+        ['nama' => 'Mint',  'hex' => '#B8E8C8'],
+        ['nama' => 'Sky',   'hex' => '#B9E2FF'],
+        ['nama' => 'Lilac', 'hex' => '#D7C2FF'],
+        ['nama' => 'Lemon', 'hex' => '#FFE58A'],
+    ];
+}
+
+/**
+ * Bersihkan daftar pilihan warna produk (maks. 12, nama unik).
+ * Bila kosong / tidak valid, kembalikan palet default.
+ */
+function produk_warna_bersih($daftar): array {
+    $hasil = [];
+    foreach ((array)$daftar as $w) {
+        if (!is_array($w)) continue;
+
+        $nama = trim((string)($w['nama'] ?? ''));
+        $hex  = strtoupper(ltrim(trim((string)($w['hex'] ?? '')), '#'));
+        if ($nama === '' || !preg_match('/^[0-9A-F]{6}$/', $hex)) continue;
+
+        $nama  = mb_substr($nama, 0, 30);
+        $kunci = mb_strtolower($nama);
+        if (isset($hasil[$kunci])) continue;
+
+        $hasil[$kunci] = ['nama' => $nama, 'hex' => '#' . $hex];
+        if (count($hasil) >= 12) break;
+    }
+
+    return $hasil ? array_values($hasil) : produk_warna_default();
+}
+
 /** Sumber data awal untuk seed/fallback: JSON lokal, else default data.php. */
 function produk_sumber_awal(): array {
     $path = produk_json_path();
@@ -50,6 +85,7 @@ function produk_db_ke_app(array $r): array {
         'gambar'    => (string)($r['gambar'] ?? ''),
         'galeri'    => sb_json_arr($r['galeri'] ?? []),
         'deskripsi' => (string)($r['deskripsi'] ?? ''),
+        'pilihan_warna' => sb_json_arr($r['pilihan_warna'] ?? []),
         'terlaris'  => !empty($r['terlaris']),
         'unggulan'  => !empty($r['unggulan']),
     ]);
@@ -70,6 +106,7 @@ function produk_app_ke_db(array $p): array {
         'gambar'    => (string)($p['gambar'] ?? ''),
         'galeri'    => $galeri,
         'deskripsi' => (string)($p['deskripsi'] ?? ''),
+        'pilihan_warna' => produk_warna_bersih($p['pilihan_warna'] ?? []),
         'terlaris'  => !empty($p['terlaris']),
         'unggulan'  => !empty($p['unggulan']),
     ];
@@ -169,6 +206,7 @@ function produk_simpan(array $data): int {
         'terlaris'   => !empty($data['terlaris']),
         'unggulan'   => !empty($data['unggulan']),
         'deskripsi'  => trim((string)($data['deskripsi'] ?? '')),
+        'pilihan_warna' => produk_warna_bersih($data['pilihan_warna'] ?? []),
     ];
 
     $galeri = array_values(array_unique(array_filter(array_map('trim', (array)($data['galeri'] ?? [])))));
@@ -395,6 +433,7 @@ function produk_normalisasi(array $p): array {
     $p['unggulan']  = !empty($p['unggulan']);
     $p['deskripsi'] = (string)($p['deskripsi'] ?? '');
     $p['galeri']    = array_values((array)($p['galeri'] ?? []));
+    $p['pilihan_warna'] = produk_warna_bersih($p['pilihan_warna'] ?? []);
     return $p;
 }
 

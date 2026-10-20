@@ -206,3 +206,64 @@
 
   render();
 })();
+
+/* =========================================================
+   Admin — editor pilihan warna produk (tambah/hapus baris)
+   ========================================================= */
+(function () {
+  'use strict';
+
+  var MAX_WARNA = 12;
+  var editor = document.getElementById('warnaEditor');
+  var tambah = document.getElementById('tambahWarna');
+  if (!editor || !tambah) return;
+
+  function barisBaru(nama, hex) {
+    var row = document.createElement('div');
+    row.className = 'warna-baris';
+
+    var warna = document.createElement('input');
+    warna.type = 'color';
+    warna.className = 'warna-hex';
+    warna.name = 'warna_hex[]';
+    warna.value = hex || '#FFB3C7';
+    warna.setAttribute('aria-label', 'Kode warna');
+
+    var teks = document.createElement('input');
+    teks.type = 'text';
+    teks.className = 'admin-input warna-nama';
+    teks.name = 'warna_nama[]';
+    teks.maxLength = 30;
+    teks.placeholder = 'Nama warna';
+    teks.value = nama || '';
+
+    var hapus = document.createElement('button');
+    hapus.type = 'button';
+    hapus.className = 'warna-hapus';
+    hapus.textContent = '✕';
+    hapus.setAttribute('aria-label', 'Hapus warna');
+
+    row.appendChild(warna);
+    row.appendChild(teks);
+    row.appendChild(hapus);
+    return row;
+  }
+
+  tambah.addEventListener('click', function () {
+    if (editor.querySelectorAll('.warna-baris').length >= MAX_WARNA) {
+      alert('Maksimal ' + MAX_WARNA + ' pilihan warna.');
+      return;
+    }
+    var row = barisBaru('', '#FFB3C7');
+    editor.appendChild(row);
+    var input = row.querySelector('.warna-nama');
+    if (input) input.focus();
+  });
+
+  editor.addEventListener('click', function (ev) {
+    var tombol = ev.target.closest('.warna-hapus');
+    if (!tombol) return;
+    var row = tombol.closest('.warna-baris');
+    if (row) row.remove();
+  });
+})();
