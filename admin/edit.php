@@ -18,6 +18,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!csrf_cek()) {
         $galat = 'Token keamanan tidak valid. Muat ulang halaman lalu coba lagi.';
     } else {
+        $galeri_urls = array_values(array_unique(array_filter(array_map('trim', explode("\n", (string)($_POST['galeri_urls'] ?? ''))))));
+
         $data = [
             'id'        => (int)($_POST['id'] ?? 0),
             'nama'      => (string)($_POST['nama'] ?? ''),
@@ -27,8 +29,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'harga'     => (int)($_POST['harga'] ?? 0),
             'unduhan'   => (int)($_POST['unduhan'] ?? 0),
             'suka'      => (int)($_POST['suka'] ?? 0),
-            'gambar'    => trim((string)($_POST['gambar_url'] ?? '')),
-            'galeri'    => array_filter(array_map('trim', explode("\n", (string)($_POST['galeri_urls'] ?? '')))),
+            'gambar'    => $galeri_urls[0] ?? '',
+            'galeri'    => $galeri_urls,
             'deskripsi' => (string)($_POST['deskripsi'] ?? ''),
             'terlaris'  => isset($_POST['terlaris']),
             'unggulan'  => isset($_POST['unggulan']),
@@ -36,6 +38,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ($data['nama'] === '') {
             $galat = 'Nama produk wajib diisi.';
+        } elseif (count($galeri_urls) > 5) {
+            $galat = 'Maksimal 5 foto per produk. Hapus sebagian foto lalu simpan lagi.';
         } else {
             $baru_id = produk_simpan($data);
             header('Location: /admin/?pesan=disimpan&id=' . $baru_id);
@@ -51,6 +55,7 @@ $f = $edit ?: [
     'gambar' => '', 'galeri' => [], 'deskripsi' => '', 'terlaris' => false, 'unggulan' => false,
 ];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $galeri_urls    = array_values(array_unique(array_filter(array_map('trim', explode("\n", (string)($_POST['galeri_urls'] ?? ''))))));
     $f['nama']      = (string)($_POST['nama'] ?? '');
     $f['penjual']   = (string)($_POST['penjual'] ?? '');
     $f['kategori']  = (array)($_POST['kategori'] ?? []);
@@ -58,12 +63,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $f['harga']     = (int)($_POST['harga'] ?? 0);
     $f['unduhan']   = (int)($_POST['unduhan'] ?? 0);
     $f['suka']      = (int)($_POST['suka'] ?? 0);
-    $f['gambar']    = trim((string)($_POST['gambar_url'] ?? ''));
-    $f['galeri']    = array_filter(array_map('trim', explode("\n", (string)($_POST['galeri_urls'] ?? ''))));
+    $f['gambar']    = $galeri_urls[0] ?? '';
+    $f['galeri']    = $galeri_urls;
     $f['deskripsi'] = (string)($_POST['deskripsi'] ?? '');
     $f['terlaris']  = isset($_POST['terlaris']);
     $f['unggulan']  = isset($_POST['unggulan']);
 }
+
+$foto = $f['galeri'] ?: ($f['gambar'] !== '' ? [$f['gambar']] : []);
 
 $judul_halaman = $edit ? 'Edit Produk' : 'Tambah Produk';
 require __DIR__ . '/../includes/admin-head.php';
@@ -141,30 +148,24 @@ require __DIR__ . '/../includes/admin-head.php';
             </div>
 
             <div class="admin-kolom">
-                <label class="admin-label">Gambar Utama</label>
+                <label class="admin-label">Foto Produk <span class="admin-label-note">maks. 5 &middot; foto pertama jadi foto utama</span></label>
                 <div class="admin-upload" id="uploadArea">
-                    <input type="file" id="fileGambar" accept="image/*" class="admin-file">
+                    <input type="file" id="fileGambar" accept="image/*" class="admin-file" multiple>
                     <div class="admin-upload-inner" id="uploadInner">
                         <span class="admin-upload-ikon">⬆</span>
-                        <strong>Klik atau seret gambar ke sini</strong>
-                        <span>Upload langsung ke Cloudinary</span>
+                        <strong>Klik atau seret foto ke sini</strong>
+                        <span>Bisa pilih beberapa foto sekaligus (maks. 5)</span>
                     </div>
-                    <img id="previewGambar" class="admin-preview" alt="Preview" hidden>
                     <div class="admin-progress" id="uploadProgress" hidden><div></div></div>
                 </div>
                 <?php if (!cloudinary_siap()): ?>
-                    <div class="admin-peringatan kecil">Cloudinary belum dikonfigurasi di <code>.env</code> — isi <code>CLOUDINARY_CLOUD_NAME</code> &amp; <code>CLOUDINARY_UPLOAD_PRESET</code>, atau isi URL gambar di bawah.</div>
+                    <div class="admin-peringatan kecil">Cloudinary belum dikonfigurasi di <code>.env</code> — isi <code>CLOUDINARY_CLOUD_NAME</code> &amp; <code>CLOUDINARY_UPLOAD_PRESET</code>, atau isi URL foto secara manual di bawah.</div>
                 <?php endif; ?>
 
-                <label class="admin-label">URL Gambar Utama</label>
-                <input class="admin-input" type="text" name="gambar_url" id="gambarUrl"
-                       value="<?= e($f['gambar']) ?>" placeholder="https://res.cloudinary.com/... atau nama-file.jpg">
-                <?php if ($f['gambar'] !== ''): ?>
-                    <img class="admin-preview-kecil" src="<?= e(gambar_url($f['gambar'])) ?>" alt="Preview saat ini">
-                <?php endif; ?>
-
-                <label class="admin-label">Galeri (opsional, satu URL per baris)</label>
-                <textarea class="admin-textarea" name="galeri_urls" rows="3" placeholder="https://res.cloudinary.com/..."><?= e(implode("\n", $f['galeri'])) ?></textarea>
+                <label class="admin-label">URL Foto (opsional, satu per baris)</label>
+                <textarea class="admin-textarea" name="galeri_urls" id="galeriUrls" rows="3" placeholder="https://res.cloudinary.com/... atau nama-file.jpg"><?= e(implode("\n", $foto)) ?></textarea>
+                <p class="admin-foto-hint" id="fotoHint" aria-live="polite"></p>
+                <div class="admin-foto-grid" id="fotoGrid" aria-live="polite"></div>
 
                 <button type="submit" class="tombol besar admin-simpan"><?= $edit ? 'Simpan Perubahan' : 'Simpan Produk' ?></button>
             </div>

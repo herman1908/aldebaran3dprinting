@@ -69,7 +69,22 @@ body.halaman-admin{display:block}
 .admin-preview-kecil{width:120px;height:96px;object-fit:cover;border-radius:12px;border:var(--bd);box-shadow:var(--shadow-sm);margin-top:10px}
 .admin-progress{height:8px;border-radius:99px;background:var(--line);overflow:hidden;margin:8px 4px 4px}
 .admin-progress div{height:100%;width:0%;border-radius:99px;background:linear-gradient(90deg,#FFB3C7,#C4A8FF);transition:width .2s}
+.admin-upload.mengunggah{pointer-events:none;opacity:.85}
+.admin-label-note{font-weight:700;font-size:11px;color:var(--faint);margin-left:6px;letter-spacing:0;text-transform:none}
+.admin-foto-hint{margin:8px 0 0;font-size:11.5px;font-weight:700;color:var(--faint)}
+.admin-foto-hint.penuh{color:var(--accent-ink)}
+.admin-foto-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:10px;margin-top:12px}
+.admin-foto-item{position:relative;aspect-ratio:1;border-radius:14px;overflow:hidden;border:var(--bd);box-shadow:var(--shadow-sm);background:var(--bg)}
+.admin-foto-item img{width:100%;height:100%;object-fit:cover;display:block}
+.admin-foto-item.utama{outline:3px solid var(--accent);outline-offset:2px}
+.admin-foto-tag{position:absolute;left:6px;bottom:6px;background:rgba(75,75,110,.8);color:#fff;font-size:10px;font-weight:800;padding:2px 8px;border-radius:999px}
+.admin-foto-item.utama .admin-foto-tag{background:linear-gradient(135deg,#FFB3C7,#C4A8FF)}
+.admin-foto-hapus{position:absolute;top:6px;right:6px;width:24px;height:24px;border:0;border-radius:50%;cursor:pointer;background:rgba(255,255,255,.92);color:#B3261E;font-size:12px;font-weight:800;line-height:1;display:grid;place-items:center;box-shadow:0 2px 6px rgba(0,0,0,.18)}
+.admin-foto-hapus:hover{background:#FFE9E7}
 .admin-simpan{margin-top:22px;width:100%}
+.admin-sosmed-form{margin-bottom:20px;max-width:720px}
+.admin-sosmed-form .admin-sub{margin-top:6px}
+.admin-sosmed-aksi{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:18px}
 
 /* Kotak masuk pesan */
 .pesan-filter{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}

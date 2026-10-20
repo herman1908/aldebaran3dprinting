@@ -34,6 +34,7 @@ require_once __DIR__ . '/data.php';
 require_once __DIR__ . '/cloudinary.php';
 require_once __DIR__ . '/produk-store.php';
 require_once __DIR__ . '/pesan-store.php';
+require_once __DIR__ . '/sosmed-store.php';
 require_once __DIR__ . '/ongkir.php';
 
 // Muat produk dari JSON admin (jika ada), else default dari data.php.

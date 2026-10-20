@@ -80,8 +80,8 @@ function produk_simpan(array $data): int {
         'deskripsi'  => trim((string)($data['deskripsi'] ?? '')),
     ];
 
-    $galeri = array_values(array_filter(array_map('trim', (array)($data['galeri'] ?? []))));
-    if ($galeri) $baru['galeri'] = $galeri;
+    $galeri = array_values(array_unique(array_filter(array_map('trim', (array)($data['galeri'] ?? [])))));
+    if ($galeri) $baru['galeri'] = array_slice($galeri, 0, 5);
 
     $ditemukan = false;
     foreach ($daftar as $i => $p) {

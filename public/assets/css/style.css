@@ -531,6 +531,14 @@ img{max-width:100%;display:block}
   .chat-form .baris2{grid-template-columns:1fr}
 }
 
+/* ---------- Ikon media sosial beranda ---------- */
+.sosmed-strip{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin:8px 0 22px;padding:16px clamp(18px,3vw,28px);background:var(--surface);border:var(--bd);border-radius:var(--r-md);box-shadow:var(--sh-brutal-sm)}
+.sosmed-label{font-family:var(--font-judul);font-weight:800;font-size:14px;color:var(--ink)}
+.sosmed-ikon{display:flex;gap:10px;flex-wrap:wrap}
+.sosmed-link{width:42px;height:42px;display:grid;place-items:center;border-radius:14px;background:var(--bg);color:var(--ink);border:var(--bd);box-shadow:var(--shadow-sm);transition:transform .15s var(--ease-pop),background .15s,color .15s}
+.sosmed-link:hover{transform:translateY(-3px);background:linear-gradient(135deg,var(--pink),var(--lilac));color:#fff}
+.sosmed-link svg{display:block}
+
 /* ---------- Footer (full-bleed mengikuti lebar layar) ---------- */
 .footer{width:auto;max-width:none;margin:12px clamp(16px,3vw,48px) 28px;display:grid;grid-template-columns:auto 1fr auto;gap:20px;align-items:center;padding:28px clamp(20px,3vw,40px);background:var(--surface);color:var(--muted);border:var(--bd);border-radius:var(--r-lg);box-shadow:var(--sh-brutal);font-size:13.5px;font-weight:600}
 .footer-maskot{width:50px;height:50px;border-radius:16px;background:linear-gradient(135deg,var(--pink),var(--lilac));display:grid;place-items:center;border:var(--bd);box-shadow:var(--sh-brutal-sm)}

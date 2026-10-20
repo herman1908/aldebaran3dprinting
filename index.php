@@ -298,4 +298,20 @@ require __DIR__ . '/includes/header.php';
     </section>
 <?php endif; ?>
 
+<?php $sosmed = sosmed_semua(); ?>
+<?php if ($sosmed): ?>
+<section class="sosmed-strip" aria-label="Media sosial kami">
+    <span class="sosmed-label">Ikuti &amp; hubungi kami</span>
+    <div class="sosmed-ikon">
+        <?php foreach ($sosmed as $sm): ?>
+        <a class="sosmed-link sosmed-<?= e($sm['platform']) ?>"
+           href="<?= e($sm['url']) ?>" target="_blank" rel="noopener"
+           title="<?= e($sm['label']) ?>" aria-label="<?= e($sm['label']) ?>">
+            <?= sosmed_ikon($sm['platform']) ?>
+        </a>
+        <?php endforeach; ?>
+    </div>
+</section>
+<?php endif; ?>
+
 <?php require __DIR__ . '/includes/footer.php'; ?>
