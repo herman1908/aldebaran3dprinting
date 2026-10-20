@@ -34,6 +34,7 @@ $halaman = [
     '/admin/pesan.php'=> 'admin/pesan.php',
     '/admin/sosmed.php'=> 'admin/sosmed.php',
     '/admin/password.php'=> 'admin/password.php',
+    '/admin/status.php'=> 'admin/status.php',
 ];
 
 chdir($akar);

@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * Klien Supabase (PostgREST) minimal tanpa library tambahan.
  *
@@ -15,7 +15,7 @@ function sb_url(): string {
 
 function sb_key(): string {
     foreach (['SUPABASE_SERVICE_KEY', 'SUPABASE_SERVICE_ROLE_KEY'] as $nama) {
-        $nilai = (string)(getenv($nama) ?: '');
+        $nilai = trim((string)(getenv($nama) ?: ''));
         if ($nilai !== '') return $nilai;
     }
     return '';
@@ -23,6 +23,29 @@ function sb_key(): string {
 
 function sb_aktif(): bool {
     return sb_url() !== '' && sb_key() !== '';
+}
+
+/** Pesan galat Supabase terakhir (aman ditampilkan ke admin, tanpa kunci). */
+function sb_error_terakhir(): string {
+    return (string)($GLOBALS['sb_error_terakhir'] ?? '');
+}
+
+/** Tebak role kunci API dari bentuknya (service_role / anon / tidak diketahui). */
+function sb_key_role(): string {
+    $kunci = sb_key();
+    if ($kunci === '') return '';
+    if (str_starts_with($kunci, 'sb_secret_')) return 'service_role';
+    if (str_starts_with($kunci, 'sb_publishable_')) return 'anon';
+
+    $bagian = explode('.', $kunci);
+    if (count($bagian) !== 3) return '';
+
+    $payload = $bagian[1];
+    $sisa = strlen($payload) % 4;
+    if ($sisa !== 0) $payload .= str_repeat('=', 4 - $sisa);
+
+    $json = json_decode((string)base64_decode(strtr($payload, '-_', '+/')), true);
+    return is_array($json) ? (string)($json['role'] ?? '') : '';
 }
 
 /**
@@ -34,6 +57,7 @@ function sb_request(string $method, string $path, ?array $body = null, string $q
 
     if (!sb_aktif()) {
         $hasil['error'] = 'Supabase belum dikonfigurasi.';
+        $GLOBALS['sb_error_terakhir'] = $hasil['error'];
         return $hasil;
     }
 
@@ -45,6 +69,7 @@ function sb_request(string $method, string $path, ?array $body = null, string $q
         $json = json_encode($body, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         if ($json === false) {
             $hasil['error'] = 'Gagal menyiapkan data JSON.';
+            $GLOBALS['sb_error_terakhir'] = $hasil['error'];
             return $hasil;
         }
     }
@@ -73,6 +98,7 @@ function sb_request(string $method, string $path, ?array $body = null, string $q
         curl_close($ch);
         if ($mentah === false) {
             $hasil['error'] = $galat !== '' ? $galat : 'Koneksi ke Supabase gagal.';
+            $GLOBALS['sb_error_terakhir'] = $hasil['error'];
             return $hasil;
         }
     } else {
@@ -90,6 +116,7 @@ function sb_request(string $method, string $path, ?array $body = null, string $q
         }
         if ($mentah === false) {
             $hasil['error'] = 'Koneksi ke Supabase gagal.';
+            $GLOBALS['sb_error_terakhir'] = $hasil['error'];
             return $hasil;
         }
     }
@@ -109,6 +136,8 @@ function sb_request(string $method, string $path, ?array $body = null, string $q
             $hasil['error'] = 'HTTP ' . $status;
         }
     }
+
+    $GLOBALS['sb_error_terakhir'] = $hasil['ok'] ? '' : $hasil['error'];
 
     return $hasil;
 }
@@ -165,3 +194,4 @@ function sb_pengaturan_set(string $kunci, string $nilai): bool {
     );
     return $r['ok'];
 }
+

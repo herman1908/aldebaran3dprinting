@@ -46,7 +46,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 header('Location: /admin/?pesan=disimpan&id=' . $baru_id);
                 exit;
             }
-            $galat = 'Gagal menyimpan produk. Periksa koneksi Supabase (atau izin tulis file) lalu coba lagi.';
+            $galat = 'Gagal menyimpan produk.';
+            if (!sb_aktif()) {
+                $galat .= ' Supabase belum terbaca di server ini (SUPABASE_URL/SUPABASE_SERVICE_KEY). Di Vercel, isi env lalu redeploy.';
+            } elseif (sb_error_terakhir() !== '') {
+                $galat .= ' Detail: ' . sb_error_terakhir();
+            }
+            $galat .= ' Buka menu Status untuk diagnostik.';
         }
     }
 }

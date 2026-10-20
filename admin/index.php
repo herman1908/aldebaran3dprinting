@@ -71,9 +71,15 @@ require __DIR__ . '/../includes/admin-head.php';
 
     <?php if (!sb_aktif()): ?>
         <div class="admin-peringatan">
-            Supabase belum dikonfigurasi — data masih disimpan di file lokal, sehingga perubahan
+            Supabase belum dikonfigurasi - data masih disimpan di file lokal, sehingga perubahan
             <strong>tidak persisten di Vercel</strong>. Isi <code>SUPABASE_URL</code> &amp;
             <code>SUPABASE_SERVICE_KEY</code>, lalu jalankan <code>supabase/schema.sql</code>.
+        </div>
+    <?php elseif (sb_key_role() !== 'service_role'): ?>
+        <div class="admin-peringatan">
+            Kunci Supabase tidak terdeteksi sebagai <strong>service_role</strong>
+            (terbaca: <code><?= e(sb_key_role() ?: 'tidak dikenali') ?></code>).
+            Jika simpan gagal, ganti kunci dan buka <a href="/admin/status.php">Status</a>.
         </div>
     <?php endif; ?>
 

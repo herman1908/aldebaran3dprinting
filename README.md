@@ -79,6 +79,8 @@ Untuk lokal, file `.env` dibaca otomatis. Di **Vercel**, isi lewat **Project →
    - Vercel: **Project > Settings > Environment Variables**, lalu redeploy.
 5. Login ke `/admin`, buka **Password**, ganti password. Password disimpan sebagai hash
    di tabel `admin_akun` dan bisa diganti kapan saja dari web.
+6. Bila penyimpanan gagal, buka **`/admin/status`** untuk melihat apakah env terbaca,
+   role kunci benar (`service_role`), tabel sudah dibuat, dan uji tulis database.
 
 Catatan keamanan: `SUPABASE_SERVICE_KEY` adalah kunci penuh database. Jangan pernah
 menaruhnya di JavaScript, HTML, atau repo publik. File `.env` sudah di-.gitignore.

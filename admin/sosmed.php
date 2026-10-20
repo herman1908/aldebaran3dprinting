@@ -18,7 +18,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $id   = (int)($_POST['id'] ?? 0);
 
         if ($aksi === 'hapus' && $id > 0) {
-            sosmed_hapus($id) ? $pesan = 'Media sosial dihapus.' : $galat = 'Gagal menghapus.';
+            if (sosmed_hapus($id)) {
+                $pesan = 'Media sosial dihapus.';
+            } else {
+                $galat = 'Gagal menghapus.';
+                if (!sb_aktif()) $galat .= ' Supabase belum aktif di server ini.';
+                elseif (sb_error_terakhir() !== '') $galat .= ' Detail: ' . sb_error_terakhir();
+            }
         } elseif ($aksi === 'simpan') {
             $platform = (string)($_POST['platform'] ?? 'website');
             $label    = trim((string)($_POST['label'] ?? ''));
@@ -36,6 +42,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 exit;
             } else {
                 $galat = 'Gagal menyimpan media sosial.';
+                if (!sb_aktif()) $galat .= ' Supabase belum aktif di server ini.';
+                elseif (sb_error_terakhir() !== '') $galat .= ' Detail: ' . sb_error_terakhir();
             }
         }
     }
