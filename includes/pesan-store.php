@@ -1,30 +1,64 @@
 <?php
 /**
- * Penyimpanan pesan/chat konsumen berbasis file JSON (tanpa database).
+ * Penyimpanan pesan/chat konsumen.
  *
- * - Pesan dari form "kolom chat" di beranda disimpan ke data/pesan.json.
- * - Dibaca & dikelola dari panel admin (admin/pesan.php).
- *
- * Catatan Vercel: filesystem serverless read-only, jadi pesan tidak persisten
- * di Vercel. Berfungsi penuh secara lokal (XAMPP / php -S).
+ * - Supabase aktif: disimpan di tabel `pesan` (persisten di Vercel).
+ * - Tanpa Supabase: fallback ke data/pesan.json (lokal).
  */
 
-/** Path file JSON pesan. */
+require_once __DIR__ . '/supabase.php';
+
+/** Path file JSON pesan (fallback lokal). */
 function pesan_json_path(): string {
     return dirname(__DIR__) . '/data/pesan.json';
 }
 
+/** Reset cache pesan dalam satu request. */
+function pesan_cache_reset(): void {
+    unset($GLOBALS['pesan_cache']);
+}
+
+/** Baris Supabase -> format aplikasi. */
+function pesan_db_ke_app(array $m): array {
+    $waktu = $m['waktu'] ?? null;
+    if (is_numeric($waktu)) {
+        $ts = (int)$waktu;
+    } elseif (is_string($waktu) && $waktu !== '') {
+        $ts = (int)strtotime($waktu);
+    } else {
+        $ts = time();
+    }
+    return [
+        'id'     => (int)($m['id'] ?? 0),
+        'nama'   => (string)($m['nama'] ?? ''),
+        'hp'     => (string)($m['hp'] ?? ''),
+        'email'  => (string)($m['email'] ?? ''),
+        'pesan'  => (string)($m['pesan'] ?? ''),
+        'waktu'  => $ts,
+        'dibaca' => !empty($m['dibaca']),
+    ];
+}
+
 /** Ambil semua pesan (array of assoc). */
 function pesan_semua(): array {
+    if (array_key_exists('pesan_cache', $GLOBALS)) return $GLOBALS['pesan_cache'];
+
+    if (sb_aktif()) {
+        $r = sb_request('GET', 'pesan', null, 'select=*&order=waktu.desc,id.desc');
+        if ($r['ok'] && is_array($r['data'])) {
+            return $GLOBALS['pesan_cache'] = array_map('pesan_db_ke_app', $r['data']);
+        }
+        // Supabase bermasalah: pakai file lokal bila ada.
+    }
+
     $path = pesan_json_path();
-    if (!is_file($path)) return [];
+    if (!is_file($path)) return $GLOBALS['pesan_cache'] = [];
     $isi = json_decode((string)file_get_contents($path), true);
-    return is_array($isi) ? $isi : [];
+    return $GLOBALS['pesan_cache'] = is_array($isi) ? $isi : [];
 }
 
 /**
- * Ubah isi file pesan dalam transaksi terkunci (flock) untuk hindari
- * race-condition saat tulis bersamaan. $fn menerima &$daftar.
+ * Ubah isi file pesan dalam transaksi terkunci (mode lokal). $fn menerima &$daftar.
  */
 function pesan_ubah(callable $fn): bool {
     $path = pesan_json_path();
@@ -47,22 +81,31 @@ function pesan_ubah(callable $fn): bool {
     @fflush($fp);
     @flock($fp, LOCK_UN);
     @fclose($fp);
+    pesan_cache_reset();
     return true;
 }
 
 /** Simpan pesan baru; kembalikan id yang dibuat, atau 0 jika gagal. */
 function pesan_tambah(array $data): int {
     $baru = [
-        'id'     => 0,
         'nama'   => trim((string)($data['nama'] ?? '')),
         'hp'     => trim((string)($data['hp'] ?? '')),
         'email'  => trim((string)($data['email'] ?? '')),
         'pesan'  => trim((string)($data['pesan'] ?? '')),
-        'waktu'  => time(),
         'dibaca' => false,
     ];
     if ($baru['pesan'] === '') return 0;
 
+    if (sb_aktif()) {
+        $baru['waktu'] = date('c');
+        $r = sb_post('pesan', $baru, 'return=representation');
+        pesan_cache_reset();
+        if (!$r['ok'] || !is_array($r['data']) || !$r['data']) return 0;
+        return (int)($r['data'][0]['id'] ?? 0);
+    }
+
+    $baru['id']    = 0;
+    $baru['waktu'] = time();
     $baru_id = 0;
     $ok = pesan_ubah(function (array &$daftar) use ($baru, &$baru_id) {
         $maks = 0;
@@ -85,6 +128,12 @@ function pesan_cari(int $id): ?array {
 
 /** Tandai pesan sudah / belum dibaca. */
 function pesan_set_dibaca(int $id, bool $baca): bool {
+    if (sb_aktif()) {
+        $r = sb_patch('pesan', 'id=eq.' . $id, ['dibaca' => $baca]);
+        pesan_cache_reset();
+        return $r['ok'] && is_array($r['data']) && count($r['data']) > 0;
+    }
+
     return pesan_ubah(function (array &$daftar) use ($id, $baca) {
         foreach ($daftar as $i => $m) {
             if ((int)($m['id'] ?? 0) === $id) { $daftar[$i]['dibaca'] = $baca; return true; }
@@ -93,8 +142,28 @@ function pesan_set_dibaca(int $id, bool $baca): bool {
     });
 }
 
+/** Tandai semua pesan sudah dibaca (satu operasi). */
+function pesan_tandai_semua_dibaca(): bool {
+    if (sb_aktif()) {
+        $r = sb_patch('pesan', 'dibaca=eq.false', ['dibaca' => true]);
+        pesan_cache_reset();
+        return $r['ok'];
+    }
+
+    return pesan_ubah(function (array &$daftar) {
+        foreach ($daftar as $i => $m) $daftar[$i]['dibaca'] = true;
+        return true;
+    });
+}
+
 /** Hapus pesan berdasarkan id. */
 function pesan_hapus(int $id): bool {
+    if (sb_aktif()) {
+        $r = sb_delete('pesan', 'id=eq.' . $id);
+        pesan_cache_reset();
+        return $r['ok'] && is_array($r['data']) && count($r['data']) > 0;
+    }
+
     return pesan_ubah(function (array &$daftar) use ($id) {
         $sebelum = count($daftar);
         $daftar = array_values(array_filter($daftar, fn($m) => (int)($m['id'] ?? 0) !== $id));
@@ -104,6 +173,12 @@ function pesan_hapus(int $id): bool {
 
 /** Jumlah pesan yang belum dibaca. */
 function pesan_belum_dibaca(): int {
+    if (sb_aktif()) {
+        $baris = sb_get('pesan', 'select=id&dibaca=eq.false');
+        if ($baris) return count($baris);
+        // gagal / kosong -> cek lokal di bawah
+    }
+
     $n = 0;
     foreach (pesan_semua() as $m) if (empty($m['dibaca'])) $n++;
     return $n;

@@ -1,37 +1,129 @@
 <?php
 /**
- * Penyimpanan produk berbasis file JSON (tanpa database).
+ * Penyimpanan produk.
  *
- * - Data default ada di includes/data.php ($produk).
- * - Perubahan dari panel admin disimpan ke data/produk.json.
- * - Saat runtime: jika data/produk.json ada, isinya dipakai; jika tidak,
- *   pakai $produk default dari data.php.
- *
- * Catatan Vercel: filesystem serverless bersifat read-only, sehingga
- * data/produk.json tidak bisa ditulis dari dashboard di Vercel. Panel admin
- * berfungsi penuh secara lokal (XAMPP / php -S). Di Vercel, tampilan toko
- * tetap memakai data default.
+ * - Jika Supabase aktif (SUPABASE_URL + SUPABASE_SERVICE_KEY), data disimpan
+ *   di tabel `produk` dan `checkout_stat` sehingga persisten di Vercel.
+ * - Jika tidak, fallback ke data/produk.json (lokal) / default data.php.
  */
 
 require_once __DIR__ . '/cloudinary.php';
+require_once __DIR__ . '/supabase.php';
 
-/** Path file JSON produk. */
+/** Path file JSON produk (fallback lokal). */
 function produk_json_path(): string {
     return dirname(__DIR__) . '/data/produk.json';
 }
 
-/** Ambil daftar produk: JSON jika ada, else default dari data.php. */
-function produk_semua(): array {
-    global $produk;
+/** Reset cache produk dalam satu request. */
+function produk_cache_reset(): void {
+    unset($GLOBALS['produk_cache']);
+}
+
+/** Reset cache statistik checkout dalam satu request. */
+function checkout_cache_reset(): void {
+    unset($GLOBALS['checkout_cache']);
+}
+
+/** Sumber data awal untuk seed/fallback: JSON lokal, else default data.php. */
+function produk_sumber_awal(): array {
     $path = produk_json_path();
     if (is_file($path)) {
         $isi = json_decode((string)file_get_contents($path), true);
         if (is_array($isi)) return $isi;
     }
+    global $produk;
     return is_array($produk) ? $produk : [];
 }
 
-/** Tulis daftar produk ke JSON (pretty-print). */
+/** Baris Supabase -> format aplikasi. */
+function produk_db_ke_app(array $r): array {
+    return produk_normalisasi([
+        'id'        => (int)($r['id'] ?? 0),
+        'nama'      => (string)($r['nama'] ?? ''),
+        'penjual'   => (string)($r['penjual'] ?? ''),
+        'kategori'  => sb_json_arr($r['kategori'] ?? []),
+        'warna'     => (string)($r['warna'] ?? 'koral'),
+        'harga'     => (int)($r['harga'] ?? 0),
+        'unduhan'   => (int)($r['unduhan'] ?? 0),
+        'suka'      => (int)($r['suka'] ?? 0),
+        'gambar'    => (string)($r['gambar'] ?? ''),
+        'galeri'    => sb_json_arr($r['galeri'] ?? []),
+        'deskripsi' => (string)($r['deskripsi'] ?? ''),
+        'terlaris'  => !empty($r['terlaris']),
+        'unggulan'  => !empty($r['unggulan']),
+    ]);
+}
+
+/** Format aplikasi -> baris Supabase. */
+function produk_app_ke_db(array $p): array {
+    $galeri = array_slice(array_values((array)($p['galeri'] ?? [])), 0, 5);
+    return [
+        'id'        => (int)($p['id'] ?? 0),
+        'nama'      => (string)($p['nama'] ?? ''),
+        'penjual'   => (string)($p['penjual'] ?? 'Aldebaran Studio'),
+        'kategori'  => array_values((array)($p['kategori'] ?? [])),
+        'warna'     => in_array($p['warna'] ?? '', ['koral', 'matahari', 'ungu'], true) ? $p['warna'] : 'koral',
+        'harga'     => max(0, (int)($p['harga'] ?? 0)),
+        'unduhan'   => max(0, (int)($p['unduhan'] ?? 0)),
+        'suka'      => max(0, (int)($p['suka'] ?? 0)),
+        'gambar'    => (string)($p['gambar'] ?? ''),
+        'galeri'    => $galeri,
+        'deskripsi' => (string)($p['deskripsi'] ?? ''),
+        'terlaris'  => !empty($p['terlaris']),
+        'unggulan'  => !empty($p['unggulan']),
+    ];
+}
+
+/**
+ * Ambil daftar produk.
+ * Urutan sumber: cache -> Supabase -> data/produk.json -> default data.php.
+ */
+function produk_semua(): array {
+    if (array_key_exists('produk_cache', $GLOBALS)) return $GLOBALS['produk_cache'];
+
+    if (sb_aktif()) {
+        $r = sb_request('GET', 'produk', null, 'select=*&order=id.asc');
+
+        if (!$r['ok']) {
+            // Supabase bermasalah: tampilkan data lokal agar toko tetap jalan.
+            return $GLOBALS['produk_cache'] = produk_sumber_awal();
+        }
+
+        $baris = is_array($r['data']) ? $r['data'] : [];
+        if ($baris) {
+            return $GLOBALS['produk_cache'] = array_map('produk_db_ke_app', $baris);
+        }
+
+        // Tabel kosong: isi sekali dari data lokal.
+        if (sb_pengaturan('seed_produk') !== '1') {
+            $awal = produk_sumber_awal();
+            if ($awal) {
+                $kirim = array_map('produk_app_ke_db', array_map('produk_normalisasi', $awal));
+                $seed  = sb_post('produk?on_conflict=id', $kirim, 'resolution=ignore-duplicates,return=minimal');
+                if ($seed['ok']) {
+                    sb_pengaturan_set('seed_produk', '1');
+                    produk_cache_reset();
+                    return produk_semua();
+                }
+                return $GLOBALS['produk_cache'] = $awal;
+            }
+            sb_pengaturan_set('seed_produk', '1');
+        }
+
+        return $GLOBALS['produk_cache'] = [];
+    }
+
+    $path = produk_json_path();
+    if (is_file($path)) {
+        $isi = json_decode((string)file_get_contents($path), true);
+        if (is_array($isi)) return $GLOBALS['produk_cache'] = $isi;
+    }
+    global $produk;
+    return $GLOBALS['produk_cache'] = is_array($produk) ? $produk : [];
+}
+
+/** Tulis daftar produk ke JSON (mode lokal / fallback). */
 function produk_tulis(array $daftar): bool {
     $path = produk_json_path();
     $dir  = dirname($path);
@@ -59,11 +151,10 @@ function produk_id_baru(): int {
 
 /**
  * Simpan (tambah / update) satu produk.
- * $data adalah array field dari form admin; id kosong = tambah baru.
+ * Kembalikan id produk, atau 0 bila penyimpanan gagal.
  */
 function produk_simpan(array $data): int {
-    $daftar = produk_semua();
-    $id     = (int)($data['id'] ?? 0);
+    $id = (int)($data['id'] ?? 0);
 
     $baru = [
         'id'         => $id > 0 ? $id : produk_id_baru(),
@@ -81,8 +172,30 @@ function produk_simpan(array $data): int {
     ];
 
     $galeri = array_values(array_unique(array_filter(array_map('trim', (array)($data['galeri'] ?? [])))));
-    if ($galeri) $baru['galeri'] = array_slice($galeri, 0, 5);
+    $baru['galeri'] = array_slice($galeri, 0, 5);
 
+    if (sb_aktif()) {
+        $baris = produk_app_ke_db($baru);
+
+        if ($id > 0 && produk_cari($id)) {
+            $r = sb_patch('produk', 'id=eq.' . $id, $baris);
+            produk_cache_reset();
+            return ($r['ok'] && is_array($r['data']) && count($r['data']) > 0) ? (int)$baru['id'] : 0;
+        }
+
+        $r = sb_post('produk', $baris, 'return=representation');
+        if (!$r['ok'] && $r['status'] === 409) {
+            // Id bentrok (mis. dua admin menyimpan bersamaan) -> coba id baru.
+            produk_cache_reset();
+            $baru['id'] = produk_id_baru();
+            $baris['id'] = $baru['id'];
+            $r = sb_post('produk', $baris, 'return=representation');
+        }
+        produk_cache_reset();
+        return $r['ok'] ? (int)$baru['id'] : 0;
+    }
+
+    $daftar    = produk_semua();
     $ditemukan = false;
     foreach ($daftar as $i => $p) {
         if ((int)($p['id'] ?? 0) === $baru['id']) {
@@ -93,26 +206,48 @@ function produk_simpan(array $data): int {
     }
     if (!$ditemukan) $daftar[] = $baru;
 
-    produk_tulis($daftar);
-    return $baru['id'];
+    $ok = produk_tulis($daftar);
+    produk_cache_reset();
+    return $ok ? (int)$baru['id'] : 0;
 }
 
 /** Hapus produk berdasarkan id. */
 function produk_hapus(int $id): bool {
+    if (sb_aktif()) {
+        $r = sb_delete('produk', 'id=eq.' . $id);
+        produk_cache_reset();
+        checkout_cache_reset();
+        return $r['ok'] && is_array($r['data']) && count($r['data']) > 0;
+    }
+
     $daftar = produk_semua();
     $baru   = array_values(array_filter($daftar, fn($p) => (int)($p['id'] ?? 0) !== $id));
     if (count($baru) === count($daftar)) return false;
-    return produk_tulis($baru);
+    $ok = produk_tulis($baru);
+    produk_cache_reset();
+    return $ok;
 }
 
 /** Toggle boolean field produk (terlaris / unggulan). */
 function produk_toggle(int $id, string $field): bool {
     if (!in_array($field, ['terlaris', 'unggulan'], true)) return false;
+
+    if (sb_aktif()) {
+        $baris = sb_get('produk', 'select=' . $field . '&id=eq.' . $id . '&limit=1');
+        if (!$baris) return false;
+        $nilai = empty($baris[0][$field]);
+        $r = sb_patch('produk', 'id=eq.' . $id, [$field => $nilai]);
+        produk_cache_reset();
+        return $r['ok'];
+    }
+
     $daftar = produk_semua();
     foreach ($daftar as $i => $p) {
         if ((int)($p['id'] ?? 0) === $id) {
             $daftar[$i][$field] = empty($p[$field]);
-            return produk_tulis($daftar);
+            $ok = produk_tulis($daftar);
+            produk_cache_reset();
+            return $ok;
         }
     }
     return false;
@@ -127,27 +262,57 @@ function checkout_json_path(): string {
 
 /** Ambil peta id => jumlah checkout (dibaca sekali per request). */
 function checkout_data(): array {
-    static $cache = null;
-    if ($cache !== null) return $cache;
-    $path = checkout_json_path();
+    if (array_key_exists('checkout_cache', $GLOBALS)) return $GLOBALS['checkout_cache'];
+
     $data = [];
+
+    if (sb_aktif()) {
+        $r = sb_request('GET', 'checkout_stat', null, 'select=produk_id,jumlah');
+        if ($r['ok'] && is_array($r['data'])) {
+            foreach ($r['data'] as $baris) {
+                $data[(int)($baris['produk_id'] ?? 0)] = max(0, (int)($baris['jumlah'] ?? 0));
+            }
+            return $GLOBALS['checkout_cache'] = $data;
+        }
+    }
+
+    $path = checkout_json_path();
     if (is_file($path)) {
         $isi = json_decode((string)file_get_contents($path), true);
         if (is_array($isi)) {
             foreach ($isi as $id => $n) $data[(int)$id] = max(0, (int)$n);
         }
     }
-    return $cache = $data;
+    return $GLOBALS['checkout_cache'] = $data;
 }
 
 /**
  * Tambah hitungan checkout tiap produk di keranjang.
- * +1 per peristiwa checkout (bukan per qty), jadi mencerminkan
- * "berapa customer yang checkout item ini". Tulis dengan lock supaya
- * aman saat beberapa checkout bersamaan.
+ * +1 per peristiwa checkout (bukan per qty).
  */
 function checkout_tambah(array $keranjang): void {
     if (!$keranjang) return;
+
+    if (sb_aktif()) {
+        foreach ($keranjang as $id => $qty) {
+            $id = (int)$id;
+            if ($id <= 0) continue;
+
+            $r = sb_rpc('checkout_tambah_stat', ['p_id' => $id]);
+            if ($r['ok']) continue;
+
+            // Fallback bila RPC belum dibuat: baca lalu tulis.
+            $baris = sb_get('checkout_stat', 'select=jumlah&produk_id=eq.' . $id . '&limit=1');
+            if ($baris) {
+                sb_patch('checkout_stat', 'produk_id=eq.' . $id, ['jumlah' => (int)($baris[0]['jumlah'] ?? 0) + 1]);
+            } else {
+                sb_post('checkout_stat', ['produk_id' => $id, 'jumlah' => 1], 'return=minimal');
+            }
+        }
+        checkout_cache_reset();
+        return;
+    }
+
     $path = checkout_json_path();
     $dir  = dirname($path);
     if (!is_dir($dir)) @mkdir($dir, 0775, true);
@@ -173,6 +338,7 @@ function checkout_tambah(array $keranjang): void {
     }
     @flock($fp, LOCK_UN);
     @fclose($fp);
+    checkout_cache_reset();
 }
 
 /** Jumlah checkout untuk satu produk. */
@@ -213,8 +379,7 @@ function produk_terlaris_set(): array {
 }
 
 /**
- * Normalisasi field produk: pastikan kategori/galeri bertipe array,
- * warna valid, dll. Dipakai saat memuat untuk ditampilkan.
+ * Normalisasi field produk.
  */
 function produk_normalisasi(array $p): array {
     $p['id']        = (int)($p['id'] ?? 0);
@@ -234,9 +399,7 @@ function produk_normalisasi(array $p): array {
 }
 
 /**
- * Timpa global $produk dengan hasil produk_semua() (JSON atau default).
- * Dipanggil dari functions.php setelah data.php dimuat, sehingga semua
- * halaman (index, produk, keranjang) otomatis memakai data terbaru.
+ * Timpa global $produk dengan hasil produk_semua().
  */
 function produk_muat_ke_global(): void {
     global $produk;

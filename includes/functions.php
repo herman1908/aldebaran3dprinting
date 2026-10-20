@@ -30,6 +30,9 @@ function muat_env_lokal(): void {
 }
 muat_env_lokal();
 
+date_default_timezone_set('Asia/Jakarta');
+
+require_once __DIR__ . '/supabase.php';
 require_once __DIR__ . '/data.php';
 require_once __DIR__ . '/cloudinary.php';
 require_once __DIR__ . '/produk-store.php';
@@ -86,7 +89,15 @@ function gambar_url(string $file): string {
 /* ---------- Cookie ---------- */
 
 function rahasia(): string {
-    return getenv('APP_SECRET') ?: 'ganti-rahasia-ini-lewat-env-APP_SECRET';
+    $secret = (string)(getenv('APP_SECRET') ?: '');
+    if ($secret !== '') return $secret;
+
+    // Cadangan agar cookie login/keranjang tetap valid antar-deploy meski
+    // APP_SECRET belum diisi: turunkan dari kunci Supabase yang stabil.
+    $kunci = sb_key();
+    if ($kunci !== '') return hash('sha256', 'aldebaran-cookie|' . $kunci);
+
+    return 'ganti-rahasia-ini-lewat-env-APP_SECRET';
 }
 
 function https_aktif(): bool {

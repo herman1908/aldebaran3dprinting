@@ -42,8 +42,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $galat = 'Maksimal 5 foto per produk. Hapus sebagian foto lalu simpan lagi.';
         } else {
             $baru_id = produk_simpan($data);
-            header('Location: /admin/?pesan=disimpan&id=' . $baru_id);
-            exit;
+            if ($baru_id > 0) {
+                header('Location: /admin/?pesan=disimpan&id=' . $baru_id);
+                exit;
+            }
+            $galat = 'Gagal menyimpan produk. Periksa koneksi Supabase (atau izin tulis file) lalu coba lagi.';
         }
     }
 }

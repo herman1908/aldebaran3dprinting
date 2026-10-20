@@ -25,8 +25,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($aksi === 'hapus' && $id > 0) {
             $p = produk_cari($id);
             if ($p) {
-                produk_hapus($id);
-                $pesan = 'Produk "' . $p['nama'] . '" dihapus.';
+                if (produk_hapus($id)) {
+                    $pesan = 'Produk "' . $p['nama'] . '" dihapus.';
+                } else {
+                    $galat = 'Gagal menghapus produk.';
+                }
             } else {
                 $galat = 'Produk tidak ditemukan.';
             }
@@ -57,7 +60,7 @@ require __DIR__ . '/../includes/admin-head.php';
     <div class="admin-topbar">
         <div class="admin-judul">
             <h1>Kelola Produk</h1>
-            <p><?= $total ?> produk &middot; <?= $unggulan ?> unggulan &middot; <?= $terlaris ?> terlaris</p>
+            <p><?= $total ?> produk &middot; <?= $unggulan ?> unggulan &middot; <?= $terlaris ?> terlaris &middot; <?= sb_aktif() ? 'DB aktif' : 'mode file' ?></p>
         </div>
         <div class="admin-aksi">
             <a class="tombol besar" href="/admin/edit.php">+ Tambah Produk</a>
@@ -65,6 +68,14 @@ require __DIR__ . '/../includes/admin-head.php';
             <a class="tombol bahaya kecil" href="/admin/logout.php">Keluar</a>
         </div>
     </div>
+
+    <?php if (!sb_aktif()): ?>
+        <div class="admin-peringatan">
+            Supabase belum dikonfigurasi — data masih disimpan di file lokal, sehingga perubahan
+            <strong>tidak persisten di Vercel</strong>. Isi <code>SUPABASE_URL</code> &amp;
+            <code>SUPABASE_SERVICE_KEY</code>, lalu jalankan <code>supabase/schema.sql</code>.
+        </div>
+    <?php endif; ?>
 
     <?php if (!$siap_cloud): ?>
         <div class="admin-peringatan">

@@ -32,6 +32,7 @@ $judul_halaman = $judul_halaman ?? 'Admin';
         <?php $belum_dibaca = pesan_belum_dibaca(); ?>
         <a href="/admin/pesan.php">Pesan<?php if ($belum_dibaca > 0): ?><span class="admin-nav-badge"><?= (int)$belum_dibaca ?></span><?php endif; ?></a>
         <a href="/admin/sosmed.php">Sosmed</a>
+        <a href="/admin/password.php">Password</a>
         <a href="/" target="_blank">Situs ↗</a>
         <a href="/admin/logout.php">Keluar</a>
     </nav>

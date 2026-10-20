@@ -1,15 +1,21 @@
 <?php
 /**
- * Media sosial toko: data di data/sosmed.json, dikelola dari admin/sosmed.php.
+ * Media sosial toko.
  *
- * Berbeda dengan pesan/checkout, file ini ikut di-commit ke repo sehingga
- * ikon tetap tampil di Vercel. Perubahan dari admin berlaku lokal; untuk
- * produksi, ubah data/sosmed.json lalu deploy (atau pakai DB bila perlu).
+ * - Supabase aktif: disimpan di tabel `sosmed` (persisten, bisa diedit online).
+ * - Tanpa Supabase: fallback ke data/sosmed.json (lokal).
  */
 
-/** Path file JSON media sosial. */
+require_once __DIR__ . '/supabase.php';
+
+/** Path file JSON media sosial (fallback lokal). */
 function sosmed_json_path(): string {
     return dirname(__DIR__) . '/data/sosmed.json';
+}
+
+/** Reset cache sosmed dalam satu request. */
+function sosmed_cache_reset(): void {
+    unset($GLOBALS['sosmed_cache']);
 }
 
 /** Daftar platform yang didukung beserta ikon SVG-nya. */
@@ -43,30 +49,91 @@ function sosmed_platform(): array {
     ];
 }
 
-/** Ambil daftar media sosial (dinormalisasi). */
-function sosmed_semua(): array {
+/** Sumber data awal: JSON lokal, else WhatsApp toko. */
+function sosmed_sumber_awal(): array {
     $path = sosmed_json_path();
-    if (!is_file($path)) return [];
-    $isi = json_decode((string)file_get_contents($path), true);
-    if (!is_array($isi)) return [];
-
-    $platform = sosmed_platform();
-    $out = [];
-    foreach ($isi as $s) {
-        if (!is_array($s)) continue;
-        $p = (string)($s['platform'] ?? 'website');
-        if (!isset($platform[$p])) $p = 'website';
-        $out[] = [
-            'id'       => (int)($s['id'] ?? 0),
-            'platform' => $p,
-            'label'    => (string)($s['label'] ?? ''),
-            'url'      => (string)($s['url'] ?? ''),
-        ];
+    if (is_file($path)) {
+        $isi = json_decode((string)file_get_contents($path), true);
+        if (is_array($isi)) return $isi;
     }
-    return $out;
+    return [[
+        'id'       => 1,
+        'platform' => 'whatsapp',
+        'label'    => 'WhatsApp',
+        'url'      => 'https://wa.me/' . whatsapp_nomor(),
+    ]];
 }
 
-/** Ubah file sosmed dalam transaksi terkunci. */
+/** Baris Supabase -> format aplikasi. */
+function sosmed_db_ke_app(array $s): array {
+    $platform = sosmed_platform();
+    $p = (string)($s['platform'] ?? 'website');
+    if (!isset($platform[$p])) $p = 'website';
+    return [
+        'id'       => (int)($s['id'] ?? 0),
+        'platform' => $p,
+        'label'    => (string)($s['label'] ?? ''),
+        'url'      => (string)($s['url'] ?? ''),
+    ];
+}
+
+/** Format aplikasi -> baris Supabase. */
+function sosmed_app_ke_db(array $s): array {
+    return [
+        'id'       => (int)($s['id'] ?? 0),
+        'platform' => (string)($s['platform'] ?? 'website'),
+        'label'    => (string)($s['label'] ?? ''),
+        'url'      => (string)($s['url'] ?? ''),
+    ];
+}
+
+/** Ambil daftar media sosial (dinormalisasi). */
+function sosmed_semua(): array {
+    if (array_key_exists('sosmed_cache', $GLOBALS)) return $GLOBALS['sosmed_cache'];
+
+    if (sb_aktif()) {
+        $r = sb_request('GET', 'sosmed', null, 'select=*&order=id.asc');
+
+        if (!$r['ok']) {
+            return $GLOBALS['sosmed_cache'] = array_map('sosmed_db_ke_app', sosmed_sumber_awal());
+        }
+
+        $baris = is_array($r['data']) ? $r['data'] : [];
+        if ($baris) {
+            return $GLOBALS['sosmed_cache'] = array_map('sosmed_db_ke_app', $baris);
+        }
+
+        if (sb_pengaturan('seed_sosmed') !== '1') {
+            $awal = sosmed_sumber_awal();
+            if ($awal) {
+                $kirim = array_map('sosmed_app_ke_db', $awal);
+                $seed  = sb_post('sosmed?on_conflict=id', $kirim, 'resolution=ignore-duplicates,return=minimal');
+                if ($seed['ok']) {
+                    sb_pengaturan_set('seed_sosmed', '1');
+                    sosmed_cache_reset();
+                    return sosmed_semua();
+                }
+                return $GLOBALS['sosmed_cache'] = array_map('sosmed_db_ke_app', $awal);
+            }
+            sb_pengaturan_set('seed_sosmed', '1');
+        }
+
+        return $GLOBALS['sosmed_cache'] = [];
+    }
+
+    $path = sosmed_json_path();
+    if (!is_file($path)) return $GLOBALS['sosmed_cache'] = [];
+    $isi = json_decode((string)file_get_contents($path), true);
+    if (!is_array($isi)) return $GLOBALS['sosmed_cache'] = [];
+
+    $out = [];
+    foreach ($isi as $s) {
+        if (is_array($s)) $out[] = sosmed_db_ke_app($s);
+    }
+    return $GLOBALS['sosmed_cache'] = $out;
+}
+
+/** Ubah file sosmed dalam transaksi terkunci (mode lokal). */
 function sosmed_ubah(callable $fn): bool {
     $path = sosmed_json_path();
     $dir  = dirname($path);
@@ -88,7 +155,15 @@ function sosmed_ubah(callable $fn): bool {
     @fflush($fp);
     @flock($fp, LOCK_UN);
     @fclose($fp);
+    sosmed_cache_reset();
     return true;
+}
+
+/** Id berikutnya (maks + 1). */
+function sosmed_id_baru(): int {
+    $maks = 0;
+    foreach (sosmed_semua() as $s) $maks = max($maks, (int)($s['id'] ?? 0));
+    return $maks + 1;
 }
 
 /** Simpan (tambah/ubah) satu media sosial. */
@@ -102,18 +177,39 @@ function sosmed_simpan(array $data): bool {
     $url = trim((string)($data['url'] ?? ''));
     if ($url === '') return false;
 
-    return sosmed_ubah(function (array &$daftar) use ($id, $platform, $label, $url) {
+    $baris = ['id' => $id, 'platform' => $platform, 'label' => $label, 'url' => $url];
+
+    if (sb_aktif()) {
+        if ($id > 0) {
+            $r = sb_patch('sosmed', 'id=eq.' . $id, $baris);
+            sosmed_cache_reset();
+            return $r['ok'] && is_array($r['data']) && count($r['data']) > 0;
+        }
+
+        $baris['id'] = sosmed_id_baru();
+        $r = sb_post('sosmed', $baris, 'return=representation');
+        if (!$r['ok'] && $r['status'] === 409) {
+            sosmed_cache_reset();
+            $baris['id'] = sosmed_id_baru();
+            $r = sb_post('sosmed', $baris, 'return=representation');
+        }
+        sosmed_cache_reset();
+        return $r['ok'];
+    }
+
+    return sosmed_ubah(function (array &$daftar) use ($id, $baris) {
         if ($id > 0) {
             foreach ($daftar as $i => $s) {
                 if ((int)($s['id'] ?? 0) === $id) {
-                    $daftar[$i] = ['id' => $id, 'platform' => $platform, 'label' => $label, 'url' => $url];
+                    $daftar[$i] = $baris;
                     return true;
                 }
             }
         }
         $maks = 0;
         foreach ($daftar as $s) $maks = max($maks, (int)($s['id'] ?? 0));
-        $daftar[] = ['id' => $maks + 1, 'platform' => $platform, 'label' => $label, 'url' => $url];
+        $baris['id'] = $maks + 1;
+        $daftar[] = $baris;
         return true;
     });
 }
@@ -128,6 +224,12 @@ function sosmed_cari(int $id): ?array {
 
 /** Hapus media sosial. */
 function sosmed_hapus(int $id): bool {
+    if (sb_aktif()) {
+        $r = sb_delete('sosmed', 'id=eq.' . $id);
+        sosmed_cache_reset();
+        return $r['ok'] && is_array($r['data']) && count($r['data']) > 0;
+    }
+
     return sosmed_ubah(function (array &$daftar) use ($id) {
         $sebelum = count($daftar);
         $daftar = array_values(array_filter($daftar, fn($s) => (int)($s['id'] ?? 0) !== $id));

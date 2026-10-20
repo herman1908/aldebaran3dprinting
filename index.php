@@ -24,6 +24,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['aksi'] ?? '') === 'kirim_p
             $arah = 'index.php?pesan=galat-panjang#chat';
         } elseif (pesan_tambah(['nama' => $nama, 'hp' => $hp, 'email' => $email, 'pesan' => $isi])) {
             $arah = 'index.php?pesan=terkirim#chat';
+        } else {
+            $arah = 'index.php?pesan=galat-kirim#chat';
         }
     }
     header('Location: ' . $arah);
@@ -251,6 +253,7 @@ require __DIR__ . '/includes/header.php';
         'galat-email'  => ['err', 'Alamat email tidak valid.'],
         'galat-pesan'  => ['err', 'Pesannya masih kosong.'],
         'galat-panjang' => ['err', 'Pesannya kepanjangan (maksimal 2000 karakter).'],
+        'galat-kirim'  => ['err', 'Pesan gagal dikirim. Coba lagi sebentar lagi, atau hubungi kami lewat WhatsApp.'],
     ];
     $kode_chat = $_GET['pesan'] ?? '';
     $chat_notif = $chat_pesan[$kode_chat] ?? null;

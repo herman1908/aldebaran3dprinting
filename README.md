@@ -7,7 +7,10 @@ Toko mainan dan karya cetak 3D untuk balita sampai anak SMA. Dibuat dengan PHP n
 ```
 toko3d/
 ├── api/index.php        Pintu masuk untuk Vercel (router ke halaman PHP)
-├── includes/            data.php (produk), functions.php, header, sidebar, footer
+├── includes/            data.php (produk awal), functions, auth, store Supabase/JSON
+├── admin/               Panel admin: produk, pesan, sosmed, ganti password
+├── data/                Fallback JSON (lokal) + .htaccess penjaga
+├── supabase/schema.sql  Skema database Supabase (jalankan sekali)
 ├── public/
 │   ├── images/          Gambar produk dan maskot (ganti dengan foto asli)
 │   └── assets/          CSS dan JavaScript
@@ -31,7 +34,9 @@ Jika `php` tidak dikenali, ubah isi file `.bat` menjadi `C:\xampp\php\php.exe -S
 
 ## Mengubah produk
 
-Semua produk ada di `includes/data.php`. Taruh foto produk di `public/images/`, lalu tulis nama file-nya di kolom `gambar`.
+Cara termudah: login ke `/admin`. Produk awal ada di `includes/data.php` dan otomatis di-seed
+ke Supabase saat pertama kali database dipakai. Tanpa Supabase, perubahan disimpan ke
+`data/produk.json` (lokal). Foto bisa diunggah ke Cloudinary atau ditaruh di `public/images/`.
 
 ## Panel admin & Cloudinary
 
@@ -43,7 +48,9 @@ Salin `.env.example` jadi `.env`, lalu isi:
 
 | Variabel | Isi |
 | --- | --- |
-| `ADMIN_PASSWORD` | Password login `/admin` (wajib) |
+| `ADMIN_PASSWORD` | Password login awal `/admin` (cadangan bila database belum punya password) |
+| `SUPABASE_URL` | URL project Supabase (`https://xxxx.supabase.co`) |
+| `SUPABASE_SERVICE_KEY` | `service_role` key — **rahasia**, hanya untuk server |
 | `WHATSAPP_TOKO` | Nomor WhatsApp tujuan checkout (opsional, default di `functions.php`) |
 | `CLOUDINARY_CLOUD_NAME` | Cloud name dari dashboard Cloudinary |
 | `CLOUDINARY_UPLOAD_PRESET` | Nama upload preset bertipe **Unsigned** |
@@ -55,9 +62,28 @@ Untuk lokal, file `.env` dibaca otomatis. Di **Vercel**, isi lewat **Project →
 ### Cara kerja produk
 
 - Produk default ada di `includes/data.php`.
-- Setiap perubahan dari admin disimpan ke **`data/produk.json`** (file JSON, tanpa database).
-- Saat runtime: kalau `data/produk.json` ada, isinya dipakai; kalau tidak, pakai data default.
-- Karena filesystem Vercel serverless bersifat read-only, admin **berfungsi penuh secara lokal**. Agar perubahan tampil di Vercel, jalankan admin secara lokal, lalu **commit `data/produk.json`** dan push.
+- **Dengan Supabase** (disarankan): produk, media sosial, pesan, dan statistik checkout
+  disimpan di database sehingga panel admin **bisa menulis langsung dari Vercel** dan
+  datanya persisten.
+- **Tanpa Supabase** (fallback): perubahan disimpan ke file JSON di `data/`. Ini hanya
+  persisten di lokal; filesystem Vercel serverless bersifat read-only, jadi perubahan
+  dari admin online tidak tersimpan.
+
+### Menyiapkan Supabase (agar admin bisa menulis online)
+
+1. Buat project gratis di [supabase.com](https://supabase.com).
+2. Buka **SQL Editor > New query**, tempel seluruh isi `supabase/schema.sql`, lalu **Run**.
+3. Buka **Project Settings > API**, salin **Project URL** dan **service_role key**.
+4. Isi `SUPABASE_URL` dan `SUPABASE_SERVICE_KEY`:
+   - Lokal: di file `.env`.
+   - Vercel: **Project > Settings > Environment Variables**, lalu redeploy.
+5. Login ke `/admin`, buka **Password**, ganti password. Password disimpan sebagai hash
+   di tabel `admin_akun` dan bisa diganti kapan saja dari web.
+
+Catatan keamanan: `SUPABASE_SERVICE_KEY` adalah kunci penuh database. Jangan pernah
+menaruhnya di JavaScript, HTML, atau repo publik. File `.env` sudah di-.gitignore.
+Jika password database lupa, hapus baris di tabel `admin_akun` lewat dashboard Supabase;
+login akan kembali memakai `ADMIN_PASSWORD` dari environment.
 
 ### Upload gambar
 

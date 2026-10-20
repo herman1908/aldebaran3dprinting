@@ -23,8 +23,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } elseif ($aksi === 'belum' && $id > 0) {
             pesan_set_dibaca($id, false) ? $pesan = 'Ditandai belum dibaca.' : $galat = 'Gagal memperbarui.';
         } elseif ($aksi === 'baca_semua') {
-            foreach (pesan_semua() as $m) pesan_set_dibaca((int)($m['id'] ?? 0), true);
-            $pesan = 'Semua pesan ditandai sudah dibaca.';
+            if (pesan_tandai_semua_dibaca()) {
+                $pesan = 'Semua pesan ditandai sudah dibaca.';
+            } else {
+                $galat = 'Gagal memperbarui.';
+            }
         }
     }
 }

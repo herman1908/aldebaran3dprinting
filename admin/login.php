@@ -11,7 +11,7 @@ if (admin_cek()) {
 }
 
 $galat  = '';
-$password_terisi = admin_password() !== '';
+$password_terisi = admin_password_ada();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!csrf_cek()) {
@@ -59,7 +59,7 @@ require __DIR__ . '/../includes/admin-head.php';
     <button type="submit" class="tombol besar">Masuk</button>
 
     <?php if (!$password_terisi): ?>
-        <div class="info-env">Set <code>ADMIN_PASSWORD</code> di environment variables Vercel (atau .env lokal) untuk mengaktifkan login.</div>
+        <div class="info-env">Set <code>ADMIN_PASSWORD</code> di environment variables (atau .env lokal), atau simpan password di database lewat halaman <em>Ganti Password</em> setelah login.</div>
     <?php endif; ?>
 </form>
 <?php require __DIR__ . '/../includes/admin-foot.php'; ?>
