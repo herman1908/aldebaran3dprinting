@@ -37,6 +37,14 @@ $halaman = [
     '/admin/status.php'=> 'admin/status.php',
 ];
 
+// Izinkan URL admin tanpa ekstensi .php (mis. /admin/status).
+if (!isset($halaman[$path]) && preg_match('#^/admin/([a-z0-9_-]+)$#', $path, $m)) {
+    $kandidat = 'admin/' . $m[1] . '.php';
+    if (is_file($akar . '/' . $kandidat)) {
+        $halaman[$path] = $kandidat;
+    }
+}
+
 chdir($akar);
 
 if (isset($halaman[$path])) {
