@@ -341,10 +341,12 @@ function checkout_data(): array {
 function checkout_tambah(array $keranjang): void {
     if (!$keranjang) return;
 
+    $diproses = [];
     if (sb_aktif()) {
-        foreach ($keranjang as $id => $qty) {
-            $id = (int)$id;
-            if ($id <= 0) continue;
+        foreach ($keranjang as $kunci => $qty) {
+            $id = (int)explode(':', (string)$kunci, 2)[0];
+            if ($id <= 0 || isset($diproses[$id])) continue;
+            $diproses[$id] = true;
 
             $r = sb_rpc('checkout_tambah_stat', ['p_id' => $id]);
             if ($r['ok']) continue;
@@ -372,9 +374,10 @@ function checkout_tambah(array $keranjang): void {
     if (!is_array($data)) $data = [];
 
     $ubah = false;
-    foreach ($keranjang as $id => $qty) {
-        $id = (int)$id;
-        if ($id <= 0) continue;
+    foreach ($keranjang as $kunci => $qty) {
+        $id = (int)explode(':', (string)$kunci, 2)[0];
+        if ($id <= 0 || isset($diproses[$id])) continue;
+        $diproses[$id] = true;
         $data[$id] = (int)($data[$id] ?? 0) + 1;
         $ubah = true;
     }

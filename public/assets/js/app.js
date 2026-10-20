@@ -59,8 +59,10 @@
             d.setAttribute('aria-pressed', 'true');
 
             var label = document.getElementById('warnaTerpilih');
+            var input = document.getElementById('warnaInput');
             var nama = d.getAttribute('data-nama');
             if (label && nama) label.textContent = nama;
+            if (input && nama) input.value = nama;
         });
     });
 

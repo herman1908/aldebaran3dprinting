@@ -15,20 +15,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit('Permintaan tidak valid.');
     }
 
-    $aksi = $_POST['aksi'] ?? '';
-    $id   = (int)($_POST['id'] ?? 0);
-    $qty  = max(1, min(99, (int)($_POST['qty'] ?? 1)));
+    $aksi  = $_POST['aksi'] ?? '';
+    $id    = (int)($_POST['id'] ?? 0);
+    $qty   = max(1, min(99, (int)($_POST['qty'] ?? 1)));
+    $kunci = trim((string)($_POST['kunci'] ?? ''));
+    $warna = trim((string)($_POST['warna'] ?? ''));
+
+    if ($kunci !== '') [$id, $warna] = keranjang_urai($kunci);
 
     $k    = keranjang();
     $kode = '';
+    $p    = cari_produk($id);
+    $warna = $p ? produk_warna_pilih($p, $warna) : '';
+    $kunci = $p ? keranjang_kunci($id, $warna) : '';
 
-    if ($aksi === 'tambah' && cari_produk($id)) {
-        $k[$id] = min(99, ($k[$id] ?? 0) + $qty);
+    if ($aksi === 'tambah' && $p) {
+        $k[$kunci] = min(99, ($k[$kunci] ?? 0) + $qty);
         $kode = 'tambah';
-    } elseif ($aksi === 'ubah' && isset($k[$id])) {
-        $k[$id] = $qty;
+    } elseif ($aksi === 'ubah' && isset($k[$kunci])) {
+        $k[$kunci] = $qty;
     } elseif ($aksi === 'hapus') {
-        unset($k[$id]);
+        unset($k[$kunci]);
         $kode = 'hapus';
     } elseif ($aksi === 'kosongkan') {
         $k = [];
@@ -54,9 +61,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $ongkir   = ($tujuan !== '' && $kurir !== '') ? ongkir_pilihan($tujuan, $kurir) : null;
         $tarif    = (int)($ongkir['tarif'] ?? 0);
         $baris    = 0;
-        if (isset($k[$id])) {
-            $p = cari_produk($id);
-            if ($p) $baris = (int)$p['harga'] * (int)$k[$id];
+        if (isset($k[$kunci])) {
+            if ($p) $baris = (int)$p['harga'] * (int)$k[$kunci];
         }
 
         header('Content-Type: application/json; charset=utf-8');
@@ -64,7 +70,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'ok'       => $aksi === 'ubah' || $kode !== '',
             'jumlah'   => jumlah_keranjang(),
             'id'       => $id,
-            'qty'      => (int)($k[$id] ?? 0),
+            'kunci'    => $kunci,
+            'warna'    => $warna,
+            'qty'      => (int)($k[$kunci] ?? 0),
             'baris'    => $baris,
             'subtotal' => $subtotal,
             'ongkir'   => $tarif,
@@ -120,20 +128,26 @@ require __DIR__ . '/includes/header.php';
             <tr><th>Produk</th><th>Harga</th><th>Jumlah</th><th>Subtotal</th><th></th></tr>
         </thead>
         <tbody>
-        <?php foreach (keranjang() as $id => $qty):
-            $p = cari_produk((int)$id);
+        <?php foreach (keranjang() as $kunci => $qty):
+            [$id, $warna] = keranjang_urai((string)$kunci);
+            $p = cari_produk($id);
             if (!$p) continue; ?>
             <tr data-harga="<?= (int)$p['harga'] ?>">
                 <td class="sel-produk">
                     <img src="<?= e(gambar_url($p['gambar'])) ?>" alt="">
-                    <a href="produk.php?id=<?= $p['id'] ?>"><?= e($p['nama']) ?></a>
+                    <span class="sel-produk-teks">
+                        <a href="produk.php?id=<?= $p['id'] ?>"><?= e($p['nama']) ?></a>
+                        <?php if ($warna !== ''): ?><small class="warna-dipilih">Warna: <?= e($warna) ?></small><?php endif; ?>
+                    </span>
                 </td>
                 <td><?= rupiah($p['harga']) ?></td>
                 <td>
                     <form method="post" class="form-qty">
                         <input type="hidden" name="csrf" value="<?= csrf_token() ?>">
                         <input type="hidden" name="aksi" value="ubah">
+                        <input type="hidden" name="kunci" value="<?= e((string)$kunci) ?>">
                         <input type="hidden" name="id" value="<?= $p['id'] ?>">
+                        <input type="hidden" name="warna" value="<?= e($warna) ?>">
                         <input type="hidden" name="tujuan" value="<?= e($tujuan_kode) ?>">
                         <input type="hidden" name="kurir" value="<?= e($kurir_dipilih) ?>">
                         <input type="number" name="qty" value="<?= (int)$qty ?>" min="1" max="99">
@@ -145,7 +159,9 @@ require __DIR__ . '/includes/header.php';
                     <form method="post">
                         <input type="hidden" name="csrf" value="<?= csrf_token() ?>">
                         <input type="hidden" name="aksi" value="hapus">
+                        <input type="hidden" name="kunci" value="<?= e((string)$kunci) ?>">
                         <input type="hidden" name="id" value="<?= $p['id'] ?>">
+                        <input type="hidden" name="warna" value="<?= e($warna) ?>">
                         <input type="hidden" name="tujuan" value="<?= e($tujuan_kode) ?>">
                         <input type="hidden" name="kurir" value="<?= e($kurir_dipilih) ?>">
                         <button class="tombol kecil bahaya" type="submit">Hapus</button>

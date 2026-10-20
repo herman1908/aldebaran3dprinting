@@ -90,7 +90,7 @@ require __DIR__ . '/includes/header.php';
             <?php endforeach; ?>
         </div>
 
-        <p class="catatan">Warna terpilih: <strong id="warnaTerpilih"><?= e($pilihan_warna[0]['nama']) ?></strong> — sebutkan pilihan ini pada catatan checkout.</p>
+        <p class="catatan">Warna terpilih: <strong id="warnaTerpilih"><?= e($pilihan_warna[0]['nama']) ?></strong> — otomatis masuk ke keranjang dan pesan WhatsApp.</p>
         <?php endif; ?>
 
         <div class="tag-baris">
@@ -103,6 +103,7 @@ require __DIR__ . '/includes/header.php';
             <input type="hidden" name="csrf" value="<?= csrf_token() ?>">
             <input type="hidden" name="aksi" value="tambah">
             <input type="hidden" name="id" value="<?= $p['id'] ?>">
+            <input type="hidden" name="warna" id="warnaInput" value="<?= e($pilihan_warna[0]['nama'] ?? '') ?>">
             <label for="qty">Jumlah</label>
             <span class="qty-stepper">
                 <button type="button" data-step="-1" aria-label="Kurangi">−</button>

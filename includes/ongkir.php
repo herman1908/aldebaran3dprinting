@@ -160,8 +160,9 @@ function ongkir_kurir(): array {
 /** Total berat paket dari isi keranjang (gram). */
 function ongkir_berat_total(): int {
     $total = 0;
-    foreach (keranjang() as $id => $qty) {
-        $p = cari_produk((int)$id);
+    foreach (keranjang() as $kunci => $qty) {
+        [$id] = keranjang_urai((string)$kunci);
+        $p = cari_produk($id);
         if (!$p) continue;
         $b = (int)($p['berat'] ?? 0);
         if ($b <= 0) $b = ONGKIR_BERAT_DEFAULT_GRAM;

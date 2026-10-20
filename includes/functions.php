@@ -121,6 +121,31 @@ function set_cookie_aman(string $nama, string $nilai, int $detik): void {
 
 /* ---------- Keranjang (cookie bertanda tangan) ---------- */
 
+/** Kunci baris keranjang: id produk + warna bila produk punya pilihan warna. */
+function keranjang_kunci(int $id, string $warna = ''): string {
+    return $warna !== '' ? $id . ':' . $warna : (string)$id;
+}
+
+/** Pisahkan kunci keranjang menjadi [id produk, nama warna]. */
+function keranjang_urai(string $kunci): array {
+    $bagian = explode(':', $kunci, 2);
+    return [(int)($bagian[0] ?? 0), trim((string)($bagian[1] ?? ''))];
+}
+
+/** Nama warna valid untuk produk; fallback ke warna pertama. */
+function produk_warna_pilih(array $p, string $warna = ''): string {
+    $daftar = $p['pilihan_warna'] ?? [];
+    if (!is_array($daftar) || !$daftar) return '';
+
+    foreach ($daftar as $w) {
+        if (is_array($w) && strcasecmp((string)($w['nama'] ?? ''), $warna) === 0) {
+            return (string)$w['nama'];
+        }
+    }
+    $pertama = $daftar[0] ?? null;
+    return is_array($pertama) ? (string)($pertama['nama'] ?? '') : '';
+}
+
 function keranjang(): array {
     $c = $_COOKIE['keranjang'] ?? '';
     [$data, $tanda] = array_pad(explode('.', $c, 2), 2, '');
@@ -130,9 +155,17 @@ function keranjang(): array {
     if (!is_array($arr)) return [];
 
     $bersih = [];
-    foreach ($arr as $id => $qty) {
-        $id = (int)$id; $qty = (int)$qty;
-        if ($qty >= 1 && cari_produk($id)) $bersih[$id] = min(99, $qty);
+    foreach ($arr as $kunci => $qty) {
+        [$id, $warna] = keranjang_urai((string)$kunci);
+        $qty = (int)$qty;
+        if ($qty < 1) continue;
+
+        $p = cari_produk($id);
+        if (!$p) continue;
+
+        $warna = produk_warna_pilih($p, $warna);
+        $kunci = keranjang_kunci($id, $warna);
+        $bersih[$kunci] = min(99, ($bersih[$kunci] ?? 0) + $qty);
     }
     return $bersih;
 }
@@ -150,8 +183,9 @@ function jumlah_keranjang(): int {
 
 function total_keranjang(): int {
     $total = 0;
-    foreach (keranjang() as $id => $qty) {
-        $p = cari_produk((int)$id);
+    foreach (keranjang() as $kunci => $qty) {
+        [$id] = keranjang_urai((string)$kunci);
+        $p = cari_produk($id);
         if ($p) $total += $p['harga'] * $qty;
     }
     return $total;
@@ -165,13 +199,15 @@ function pesan_checkout_whatsapp(?array $ongkir = null): string {
     $baris    = [];
     $subtotal = 0;
     $no       = 0;
-    foreach (keranjang() as $id => $qty) {
-        $p = cari_produk((int)$id);
+    foreach (keranjang() as $kunci => $qty) {
+        [$id, $warna] = keranjang_urai((string)$kunci);
+        $p = cari_produk($id);
         if (!$p) continue;
         $no++;
         $sub       = $p['harga'] * $qty;
         $subtotal += $sub;
         $baris[]   = $no . '. ' . $p['nama'] . ' x' . $qty . ' = ' . rupiah($sub);
+        if ($warna !== '') $baris[] = '   Warna yang dipilih : ' . $warna;
     }
 
     $lines   = [];
