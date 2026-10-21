@@ -19,15 +19,9 @@ function item_menu(string $kunci, string $href, string $ikon, string $label, str
         ?>
 
         <h4>Kategori</h4>
-        <?php
-        item_menu('clicker',   'index.php?kategori=clicker#produk',   '◍', 'Fidget Clicker',   $menu_aktif);
-        item_menu('gantungan', 'index.php?kategori=gantungan#produk', '⌘', 'Gantungan Kunci',  $menu_aktif);
-        item_menu('figure',    'index.php?kategori=figure#produk',    '⬢', 'Action Figure',    $menu_aktif);
-        item_menu('pajangan',  'index.php?kategori=pajangan#produk',  '❏', 'Pajangan',         $menu_aktif);
-        item_menu('dekor',     'index.php?kategori=dekor#produk',     '◧', 'Dekor Kamar',      $menu_aktif);
-        item_menu('games',     'index.php?kategori=games#produk',     '▣', 'Games & Puzzle',   $menu_aktif);
-        item_menu('hobi',    'index.php?kategori=hobi#produk',    '✚', 'Hobi & DIY',        $menu_aktif);
-        ?>
+        <?php foreach ($kategori_nav as $kunci => $ikon): ?>
+            <?php item_menu($kunci, 'index.php?kategori=' . rawurlencode($kunci) . '#produk', $ikon, $kategori[$kunci] ?? $kunci, $menu_aktif); ?>
+        <?php endforeach; ?>
 
 
         <h4>Kamu</h4>

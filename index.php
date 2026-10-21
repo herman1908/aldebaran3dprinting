@@ -122,7 +122,7 @@ require __DIR__ . '/includes/header.php';
         </div>
         <div class="hero-stats">
             <div class="hero-stat"><strong><?= count($produk) ?>+</strong><span>Produk lucu</span></div>
-            <div class="hero-stat"><strong><?= count($kategori_meta) ?></strong><span>Kategori bentuk</span></div>
+            <div class="hero-stat"><strong><?= count($kategori_nav) ?></strong><span>Kategori bentuk</span></div>
             <div class="hero-stat"><strong>4.9/5</strong><span>2.000+ ulasan</span></div>
         </div>
     </div>

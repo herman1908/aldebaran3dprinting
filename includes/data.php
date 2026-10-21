@@ -48,6 +48,21 @@ $kategori = [
     'printer'   => 'Printer & Filamen',
 ];
 
+/**
+ * Kategori yang tampil di sidebar (kunci => ikon).
+ * Hero "Kategori bentuk" menghitung dari daftar ini supaya angkanya selalu
+ * sinkron dengan menu yang benar-benar tampil. Tambah/hapus kategori di sini.
+ */
+$kategori_nav = [
+    'clicker'   => '◍',
+    'gantungan' => '⌘',
+    'figure'    => '⬢',
+    'pajangan'  => '❏',
+    'dekor'     => '◧',
+    'games'     => '▣',
+    'hobi'      => '✚',
+];
+
 // Showcase kategori bentuk untuk kartu zona di beranda: ikon, deskripsi, warna pastel
 $kategori_meta = [
     'clicker'   => ['ikon' => '🖱️', 'ket' => 'Klik-klik satisfying, bisa custom nama & bentuk.', 'warna' => 'koral'],
