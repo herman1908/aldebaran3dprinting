@@ -25,46 +25,91 @@ function checkout_cache_reset(): void {
     unset($GLOBALS['checkout_cache']);
 }
 
-/** Palet warna default yang tampil di halaman detail produk. */
-function produk_warna_default(): array {
+/** Palet warna tetap yang bisa dipilih admin (urutan = urutan tampil). */
+function produk_palet_warna(): array {
     return [
-        ['nama' => 'Pink',  'hex' => '#FFB3C7'],
-        ['nama' => 'Mint',  'hex' => '#B8E8C8'],
-        ['nama' => 'Sky',   'hex' => '#B9E2FF'],
-        ['nama' => 'Lilac', 'hex' => '#D7C2FF'],
-        ['nama' => 'Lemon', 'hex' => '#FFE58A'],
+        'pink'  => ['nama' => 'Pink',  'hex' => '#FFB3C7'],
+        'mint'  => ['nama' => 'Mint',  'hex' => '#B8E8C8'],
+        'sky'   => ['nama' => 'Sky',   'hex' => '#B9E2FF'],
+        'lilac' => ['nama' => 'Lilac', 'hex' => '#D7C2FF'],
+        'lemon' => ['nama' => 'Lemon', 'hex' => '#FFE58A'],
+        'peach' => ['nama' => 'Peach', 'hex' => '#FFD6B0'],
     ];
 }
 
+/** Palet default: semua warna tetap. */
+function produk_warna_default(): array {
+    return array_values(produk_palet_warna());
+}
+
+/** Kunci palet terdekat dari kode hex. */
+function warna_palet_terdekat(string $hex): string {
+    $hex = strtoupper(ltrim(trim($hex), '#'));
+    if (!preg_match('/^[0-9A-F]{6}$/', $hex)) return '';
+
+    $r = hexdec(substr($hex, 0, 2));
+    $g = hexdec(substr($hex, 2, 2));
+    $b = hexdec(substr($hex, 4, 2));
+
+    $terdekat = '';
+    $jarak    = PHP_INT_MAX;
+    foreach (produk_palet_warna() as $kunci => $w) {
+        $kode = ltrim($w['hex'], '#');
+        $dr = $r - hexdec(substr($kode, 0, 2));
+        $dg = $g - hexdec(substr($kode, 2, 2));
+        $db = $b - hexdec(substr($kode, 4, 2));
+        $d  = ($dr * $dr) + ($dg * $dg) + ($db * $db);
+        if ($d < $jarak) {
+            $jarak    = $d;
+            $terdekat = $kunci;
+        }
+    }
+    return $terdekat;
+}
+
 /**
- * Bersihkan daftar pilihan warna produk (maks. 12, nama unik).
- * Bila kosong / tidak valid, kembalikan palet default.
+ * Petakan daftar pilihan warna lama ke palet tetap.
+ * Nama/hex yang cocok dipakai; selain itu dicari warna palet terdekat.
+ * Bila kosong, kembalikan semua warna palet.
  */
 function produk_warna_bersih($daftar): array {
+    $palet = produk_palet_warna();
     $hasil = [];
+
     foreach ((array)$daftar as $w) {
         if (!is_array($w)) continue;
 
         $nama = trim((string)($w['nama'] ?? ''));
         $hex  = strtoupper(ltrim(trim((string)($w['hex'] ?? '')), '#'));
-        if (!preg_match('/^[0-9A-F]{6}$/', $hex)) continue;
+        $kunci = '';
 
-        if ($nama === '') $nama = 'Warna ' . (count($hasil) + 1);
-
-        $dasar = mb_substr($nama, 0, 30);
-        $nama  = $dasar;
-        $kunci = mb_strtolower($nama);
-        if (isset($hasil[$kunci])) {
-            $nomor = 2;
-            do {
-                $akhiran = ' ' . $nomor++;
-                $nama    = mb_substr($dasar, 0, 30 - mb_strlen($akhiran)) . $akhiran;
-                $kunci   = mb_strtolower($nama);
-            } while (isset($hasil[$kunci]));
+        // Nama palet lebih diutamakan supaya warna lama tetap konsisten.
+        foreach ($palet as $k => $p) {
+            if ($nama !== '' && strcasecmp($nama, $p['nama']) === 0) {
+                $kunci = $k;
+                break;
+            }
         }
 
-        $hasil[$kunci] = ['nama' => $nama, 'hex' => '#' . $hex];
-        if (count($hasil) >= 12) break;
+        // Hex persis.
+        if ($kunci === '' && preg_match('/^[0-9A-F]{6}$/', $hex)) {
+            foreach ($palet as $k => $p) {
+                if (strcasecmp($hex, ltrim($p['hex'], '#')) === 0) {
+                    $kunci = $k;
+                    break;
+                }
+            }
+        }
+
+        // Warna di luar palet: ambil yang paling dekat.
+        if ($kunci === '' && preg_match('/^[0-9A-F]{6}$/', $hex)) {
+            $kunci = warna_palet_terdekat($hex);
+        }
+
+        if ($kunci === '' || !isset($palet[$kunci]) || isset($hasil[$kunci])) continue;
+
+        $hasil[$kunci] = $palet[$kunci];
+        if (count($hasil) >= count($palet)) break;
     }
 
     return $hasil ? array_values($hasil) : produk_warna_default();

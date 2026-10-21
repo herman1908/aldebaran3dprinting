@@ -142,6 +142,15 @@ function produk_warna_pilih(array $p, string $warna = ''): string {
             return (string)$w['nama'];
         }
     }
+
+    // Kunci lama dari editor ("1", "Warna 1", "Warna 2", ...) cocokkan lewat urutan.
+    if (preg_match('/^(?:Warna\s*)?(\d+)$/i', trim($warna), $cocok)) {
+        $indeks = (int)$cocok[1] - 1;
+        if (isset($daftar[$indeks]) && is_array($daftar[$indeks])) {
+            return (string)($daftar[$indeks]['nama'] ?? '');
+        }
+    }
+
     $pertama = $daftar[0] ?? null;
     return is_array($pertama) ? (string)($pertama['nama'] ?? '') : '';
 }

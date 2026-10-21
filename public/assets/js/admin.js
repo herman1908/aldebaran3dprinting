@@ -218,6 +218,54 @@
   var tambah = document.getElementById('tambahWarna');
   if (!editor || !tambah) return;
 
+  var NAMA_WARNA = {
+    'FFB3C7': 'Pink', 'B8E8C8': 'Mint', 'B9E2FF': 'Sky',
+    'D7C2FF': 'Lilac', 'FFE58A': 'Lemon', 'FFFFFF': 'Putih',
+    'F5F5DC': 'Krem', '000000': 'Hitam', '808080': 'Abu-abu',
+    'C0C0C0': 'Silver', 'FF0000': 'Merah', 'FFA500': 'Oranye',
+    'FFFF00': 'Kuning', '00FF00': 'Hijau', '008000': 'Hijau Tua',
+    '00FFFF': 'Cyan', '0000FF': 'Biru', '000080': 'Biru Tua',
+    '800080': 'Ungu', 'FF00FF': 'Magenta', 'A52A2A': 'Coklat',
+    'FFD700': 'Emas', 'FFC0CB': 'Pink Muda'
+  };
+
+  function namaDariHex(hex) {
+    var kode = String(hex || '').replace('#', '').toUpperCase();
+    return NAMA_WARNA[kode] || ('Warna #' + kode);
+  }
+
+  function namaOtomatis(nama) {
+    nama = String(nama || '').trim();
+    return nama === '' || /^\d+$/.test(nama) || /^Warna\s*\d+$/i.test(nama) || /^Warna\s+#[0-9A-F]{6}$/i.test(nama);
+  }
+
+  function namaUnik(dasar, kecuali) {
+    var dipakai = {};
+    Array.prototype.forEach.call(editor.querySelectorAll('.warna-nama'), function (input) {
+      if (input !== kecuali) dipakai[input.value.trim().toLowerCase()] = true;
+    });
+    var nama = dasar, nomor = 2;
+    while (dipakai[nama.toLowerCase()]) {
+      nama = dasar + ' ' + nomor++;
+    }
+    return nama;
+  }
+
+  function siapkanBaris(row) {
+    var warna = row.querySelector('.warna-hex');
+    var teks  = row.querySelector('.warna-nama');
+    if (!warna || !teks) return;
+
+    if (teks.dataset.otomatis === undefined) {
+      teks.dataset.otomatis = namaOtomatis(teks.value) ? '1' : '0';
+    }
+    if (teks.dataset.otomatis === '1') {
+      teks.value = namaUnik(namaDariHex(warna.value), teks);
+    }
+  }
+
+  Array.prototype.forEach.call(editor.querySelectorAll('.warna-baris'), siapkanBaris);
+
   function barisBaru(nama, hex) {
     var row = document.createElement('div');
     row.className = 'warna-baris';
@@ -236,6 +284,7 @@
     teks.maxLength = 30;
     teks.placeholder = 'Nama warna';
     teks.value = nama || '';
+    teks.dataset.otomatis = namaOtomatis(teks.value) ? '1' : '0';
 
     var hapus = document.createElement('button');
     hapus.type = 'button';
@@ -249,26 +298,29 @@
     return row;
   }
 
-  function namaWarnaBaru() {
-    var dipakai = {};
-    Array.prototype.forEach.call(editor.querySelectorAll('.warna-nama'), function (input) {
-      dipakai[input.value.trim().toLowerCase()] = true;
-    });
-    var nomor = editor.querySelectorAll('.warna-baris').length + 1;
-    var nama;
-    do {
-      nama = 'Warna ' + nomor++;
-    } while (dipakai[nama.toLowerCase()]);
-    return nama;
-  }
+  editor.addEventListener('input', function (ev) {
+    var row = ev.target.closest('.warna-baris');
+    if (!row) return;
+
+    if (ev.target.classList.contains('warna-hex')) {
+      var teks = row.querySelector('.warna-nama');
+      if (teks && teks.dataset.otomatis === '1') {
+        teks.value = namaUnik(namaDariHex(ev.target.value), teks);
+      }
+    } else if (ev.target.classList.contains('warna-nama')) {
+      ev.target.dataset.otomatis = namaOtomatis(ev.target.value) ? '1' : '0';
+    }
+  });
 
   tambah.addEventListener('click', function () {
     if (editor.querySelectorAll('.warna-baris').length >= MAX_WARNA) {
       alert('Maksimal ' + MAX_WARNA + ' pilihan warna.');
       return;
     }
-    var row = barisBaru(namaWarnaBaru(), '#FFB3C7');
+    var row = barisBaru(namaUnik(namaDariHex('#FFB3C7')), '#FFB3C7');
+    row.querySelector('.warna-nama').dataset.otomatis = '1';
     editor.appendChild(row);
+    siapkanBaris(row);
     var input = row.querySelector('.warna-nama');
     if (input) {
       input.focus();

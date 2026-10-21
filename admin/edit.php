@@ -20,16 +20,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         $galeri_urls = array_values(array_unique(array_filter(array_map('trim', explode("\n", (string)($_POST['galeri_urls'] ?? ''))))));
 
+        $kunci_warna = array_values(array_unique(array_filter((array)($_POST['warna_pilih'] ?? []), 'is_string')));
         $pilihan_warna = [];
-        $nama_warna    = (array)($_POST['warna_nama'] ?? []);
-        $hex_warna     = (array)($_POST['warna_hex'] ?? []);
-        $indeks_warna  = array_unique(array_merge(array_keys($nama_warna), array_keys($hex_warna)));
-        sort($indeks_warna);
-        foreach ($indeks_warna as $i) {
-            $pilihan_warna[] = [
-                'nama' => (string)($nama_warna[$i] ?? ''),
-                'hex'  => (string)($hex_warna[$i] ?? ''),
-            ];
+        foreach (produk_palet_warna() as $kunci => $w) {
+            if (in_array($kunci, $kunci_warna, true)) $pilihan_warna[] = $w;
         }
 
         $data = [
@@ -53,6 +47,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $galat = 'Nama produk wajib diisi.';
         } elseif (count($galeri_urls) > 5) {
             $galat = 'Maksimal 5 foto per produk. Hapus sebagian foto lalu simpan lagi.';
+        } elseif (!$pilihan_warna) {
+            $galat = 'Pilih minimal satu warna untuk produk ini.';
         } else {
             $baru_id = produk_simpan($data);
             if ($baru_id > 0) {
@@ -145,18 +141,24 @@ require __DIR__ . '/../includes/admin-head.php';
                     </div>
                 </div>
 
-                <label class="admin-label">Pilihan Warna di Detail Produk <span class="admin-label-note">maks. 12</span></label>
-                <div class="warna-editor" id="warnaEditor">
-                    <?php foreach ($f['pilihan_warna'] as $w): ?>
-                    <div class="warna-baris">
-                        <input type="color" class="warna-hex" name="warna_hex[]" value="<?= e($w['hex']) ?>" aria-label="Kode warna">
-                        <input type="text" class="admin-input warna-nama" name="warna_nama[]" maxlength="30" value="<?= e($w['nama']) ?>" placeholder="Nama warna">
-                        <button type="button" class="warna-hapus" aria-label="Hapus warna">✕</button>
-                    </div>
+                <label class="admin-label">Pilihan Warna di Detail Produk <span class="admin-label-note">6 warna tetap</span></label>
+                <div class="warna-palet">
+                    <?php
+                    $hex_dipilih = array_map(
+                        fn($w) => strtoupper(ltrim((string)($w['hex'] ?? ''), '#')),
+                        $f['pilihan_warna']
+                    );
+                    foreach (produk_palet_warna() as $kunci => $w):
+                        $aktif = in_array(strtoupper(ltrim($w['hex'], '#')), $hex_dipilih, true);
+                    ?>
+                    <label class="warna-palet-item<?= $aktif ? ' aktif' : '' ?>">
+                        <input type="checkbox" name="warna_pilih[]" value="<?= e($kunci) ?>" <?= $aktif ? 'checked' : '' ?>>
+                        <span class="warna-palet-dot" style="background:<?= e($w['hex']) ?>"></span>
+                        <span><?= e($w['nama']) ?></span>
+                    </label>
                     <?php endforeach; ?>
                 </div>
-                <button type="button" class="tombol abu kecil" id="tambahWarna">+ Tambah warna</button>
-                <span class="admin-sub">Warna ini muncul sebagai pilihan di halaman detail produk. Nama kosong atau sama akan diisi otomatis. Kosongkan semua untuk memakai palet default.</span>
+                <span class="admin-sub">Pilih warna yang tampil di halaman detail produk. Warna aktif pertama (urutan palet) jadi default. Minimal satu warna.</span>
 
                 <div class="admin-row2">
                     <div>
