@@ -140,8 +140,8 @@ require __DIR__ . '/includes/header.php';
                         <?php if ($warna !== ''): ?><small class="warna-dipilih">Warna: <?= e($warna) ?></small><?php endif; ?>
                     </span>
                 </td>
-                <td><?= rupiah($p['harga']) ?></td>
-                <td>
+                <td data-label="Harga"><?= rupiah($p['harga']) ?></td>
+                <td data-label="Jumlah">
                     <form method="post" class="form-qty">
                         <input type="hidden" name="csrf" value="<?= csrf_token() ?>">
                         <input type="hidden" name="aksi" value="ubah">
@@ -150,12 +150,15 @@ require __DIR__ . '/includes/header.php';
                         <input type="hidden" name="warna" value="<?= e($warna) ?>">
                         <input type="hidden" name="tujuan" value="<?= e($tujuan_kode) ?>">
                         <input type="hidden" name="kurir" value="<?= e($kurir_dipilih) ?>">
-                        <input type="number" name="qty" value="<?= (int)$qty ?>" min="1" max="99">
-                        <button class="tombol kecil abu" type="submit">Ubah</button>
+                        <span class="qty-stepper vertikal">
+                            <button type="button" data-step="1" aria-label="Tambah jumlah">+</button>
+                            <input type="number" name="qty" value="<?= (int)$qty ?>" min="1" max="99" inputmode="numeric" aria-label="Jumlah">
+                            <button type="button" data-step="-1" aria-label="Kurangi jumlah">&minus;</button>
+                        </span>
                     </form>
                 </td>
-                <td><strong data-subtotal-baris><?= rupiah($p['harga'] * $qty) ?></strong></td>
-                <td>
+                <td data-label="Subtotal"><strong data-subtotal-baris><?= rupiah($p['harga'] * $qty) ?></strong></td>
+                <td class="sel-hapus">
                     <form method="post">
                         <input type="hidden" name="csrf" value="<?= csrf_token() ?>">
                         <input type="hidden" name="aksi" value="hapus">
