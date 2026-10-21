@@ -192,6 +192,7 @@ require __DIR__ . '/includes/header.php';
     $subtotal     = total_keranjang();
     $ongkir_pilih = $opsi_terpilih['tarif'] ?? 0;
     $total_akhir  = $subtotal + $ongkir_pilih;
+    $is_cod       = $opsi_terpilih && !empty($opsi_terpilih['cod']);
     ?>
     <section class="ongkir" id="ongkir">
         <div class="ongkir-kepala">
@@ -223,30 +224,32 @@ require __DIR__ . '/includes/header.php';
                     <span>Jarak ±<?= (int)round($estimasi['jarak']) ?> km</span>
                     <span>Berat ±<?= number_format($estimasi['berat'] / 1000, 2, ',', '.') ?> kg</span>
                 </div>
-                <p class="ongkir-pilih-hint">Pilih salah satu ekspedisi untuk menambahkan ongkir ke total belanja:</p>
+                <p class="ongkir-pilih-hint">Pilih layanan pengiriman untuk menambahkan ongkir ke total belanja:</p>
                 <ul class="ongkir-opsi">
                     <?php foreach ($estimasi['opsi'] as $o):
                         $terpilih = $opsi_terpilih && $o['kurir'] === $opsi_terpilih['kurir'];
+                        $opsi_cod = !empty($o['cod']);
                         $tautan = 'keranjang.php?tujuan=' . rawurlencode($estimasi['kode']) . '&kurir=' . rawurlencode($o['kurir']) . '#ongkir';
                     ?>
                     <li>
-                        <a class="ongkir-item<?= $terpilih ? ' aktif' : '' ?>" href="<?= e($tautan) ?>">
+                        <a class="ongkir-item<?= $opsi_cod ? ' cod' : '' ?><?= $terpilih ? ' aktif' : '' ?>" href="<?= e($tautan) ?>">
                             <span class="ongkir-kurir"><?= e($o['kurir']) ?><small><?= e($o['layanan']) ?></small></span>
-                            <span class="ongkir-eta">±<?= e($o['eta']) ?></span>
-                            <span class="ongkir-tarif"><?= rupiah($o['tarif']) ?></span>
+                            <span class="ongkir-eta">±<?= e($o['eta']) ?><?= $opsi_cod ? ' · Bayar di tempat' : '' ?></span>
+                            <span class="ongkir-tarif"><?= $o['tarif'] > 0 ? rupiah($o['tarif']) : 'Gratis' ?></span>
                             <span class="ongkir-pilih"><?= $terpilih ? '✓ Dipilih' : 'Pilih' ?></span>
                         </a>
                     </li>
                     <?php endforeach; ?>
                 </ul>
                 <p class="ongkir-ket">*Perkiraan saja, bukan tarif resmi ekspedisi. Biaya final dikonfirmasi saat checkout.
+                    COD diantar langsung oleh penjual dan dibayar tunai saat produk diterima.
                     <?php if ($opsi_terpilih): ?>
                         <a class="ongkir-batal" href="keranjang.php#ongkir">× Batalkan pilihan ongkir</a>
                     <?php endif; ?>
                 </p>
             </div>
         <?php else: ?>
-            <p class="ongkir-ket">Pilih kecamatan lalu klik <strong>Cek ongkir</strong> untuk melihat perkiraan biaya JNE, SiCepat, dan J&amp;T.</p>
+            <p class="ongkir-ket">Pilih kecamatan lalu klik <strong>Cek ongkir</strong> untuk melihat perkiraan biaya JNE, SiCepat, J&amp;T, dan COD.</p>
         <?php endif; ?>
     </section>
 
@@ -257,10 +260,10 @@ require __DIR__ . '/includes/header.php';
                 <li><span>Subtotal produk</span><b id="subtotalProduk"><?= rupiah($subtotal) ?></b></li>
                 <li<?= $opsi_terpilih ? '' : ' class="rincian-off"' ?>>
                     <span>Ongkir<?= $opsi_terpilih ? ' · ' . e($opsi_terpilih['kurir'] . ' ' . $opsi_terpilih['layanan']) : '' ?></span>
-                    <b><?= $opsi_terpilih ? rupiah($ongkir_pilih) : 'Belum dipilih' ?></b>
+                    <b><?= $opsi_terpilih ? ($ongkir_pilih > 0 ? rupiah($ongkir_pilih) : 'Gratis') : 'Belum dipilih' ?></b>
                 </li>
             </ul>
-            <small class="ringkasan-ket">Sudah termasuk bungkus kado standar.</small>
+            <small class="ringkasan-ket"><?= $is_cod ? 'COD: diantar langsung penjual, bayar tunai saat produk diterima.' : 'Sudah termasuk bungkus kado standar.' ?></small>
         </div>
         <div class="aksi-baris">
             <form method="post">
@@ -273,7 +276,7 @@ require __DIR__ . '/includes/header.php';
                 <input type="hidden" name="aksi" value="checkout">
                 <input type="hidden" name="tujuan" value="<?= e($tujuan_kode) ?>">
                 <input type="hidden" name="kurir" value="<?= e($kurir_dipilih) ?>">
-                <button class="tombol" type="submit">Checkout via WhatsApp</button>
+                <button class="tombol" type="submit"><?= $is_cod ? 'Checkout COD via WhatsApp' : 'Checkout via WhatsApp' ?></button>
             </form>
         </div>
     </div>

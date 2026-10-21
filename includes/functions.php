@@ -202,7 +202,7 @@ function total_keranjang(): int {
 
 /**
  * Susun teks pesanan untuk WhatsApp dari isi keranjang.
- * $ongkir (opsional): ['kurir','layanan','tarif','destinasi'] dari ongkir_pilihan().
+ * $ongkir (opsional): ['kurir','layanan','tarif','destinasi','cod'] dari ongkir_pilihan().
  */
 function pesan_checkout_whatsapp(?array $ongkir = null): string {
     $baris    = [];
@@ -226,9 +226,17 @@ function pesan_checkout_whatsapp(?array $ongkir = null): string {
     $lines[] = '';
     $lines[] = 'Subtotal: ' . rupiah($subtotal);
     if ($ongkir) {
-        $tujuan  = !empty($ongkir['destinasi']) ? ' ke ' . $ongkir['destinasi'] : '';
-        $lines[] = 'Ongkir (' . $ongkir['kurir'] . ' ' . $ongkir['layanan'] . $tujuan . '): ' . rupiah((int)$ongkir['tarif']);
-        $lines[] = 'Total: ' . rupiah($subtotal + (int)$ongkir['tarif']);
+        $tujuan = !empty($ongkir['destinasi']) ? ' ke ' . $ongkir['destinasi'] : '';
+        $tarif  = (int)$ongkir['tarif'];
+        if (!empty($ongkir['cod'])) {
+            $lines[] = 'Pengiriman: COD - ' . $ongkir['layanan'] . $tujuan;
+            $lines[] = 'Ongkir COD: ' . ($tarif > 0 ? rupiah($tarif) : 'Gratis');
+            $lines[] = 'Pembayaran: Cash on Delivery (COD) - bayar saat produk diterima';
+            $lines[] = 'Total dibayar di tempat: ' . rupiah($subtotal + $tarif);
+        } else {
+            $lines[] = 'Ongkir (' . $ongkir['kurir'] . ' ' . $ongkir['layanan'] . $tujuan . '): ' . rupiah($tarif);
+            $lines[] = 'Total: ' . rupiah($subtotal + $tarif);
+        }
     } else {
         $lines[] = 'Ongkir: belum dipilih';
         $lines[] = 'Total: ' . rupiah($subtotal);

@@ -1,6 +1,6 @@
 <?php
 /**
- * Estimasi ongkos kirim Jabodetabek (JNE, SiCepat, J&T).
+ * Estimasi ongkos kirim Jabodetabek (JNE, SiCepat, J&T) + opsi COD.
  *
  * Tanpa API eksternal / tanpa API key: tarif diperkirakan dari JARAK
  * (garis lurus dikali faktor jalan raya) dari lokasi toko di Tangerang
@@ -19,6 +19,12 @@ const ONGKIR_BERAT_DEFAULT_GRAM = 200;
 
 /** Faktor koreksi jarak garis lurus -> perkiraan jarak jalan raya. */
 const ONGKIR_FAKTOR_JALAN = 1.3;
+
+/** Opsi COD: diantar langsung penjual, dibayar tunai saat produk diterima. */
+const ONGKIR_COD_KURIR   = 'COD';
+const ONGKIR_COD_LAYANAN = 'Diantar penjual';
+/** Tarif COD. 0 = gratis ongkir; ubah bila ingin tarif tetap. */
+const ONGKIR_COD_TARIF   = 0;
 
 /**
  * Daftar kecamatan tujuan Jabodetabek, dikelompokkan per kota/kabupaten.
@@ -203,6 +209,16 @@ function ongkir_estimasi(string $kode): ?array {
             'eta'     => ongkir_eta($jarak),
         ];
     }
+
+    // COD bukan ekspedisi: penjual mengantar langsung, pembayaran tunai saat diterima.
+    $opsi[] = [
+        'kurir'   => ONGKIR_COD_KURIR,
+        'layanan' => ONGKIR_COD_LAYANAN,
+        'tarif'   => ONGKIR_COD_TARIF,
+        'eta'     => ongkir_eta($jarak),
+        'cod'     => true,
+    ];
+
     usort($opsi, fn($a, $b) => $a['tarif'] <=> $b['tarif']);
 
     return [
@@ -216,7 +232,7 @@ function ongkir_estimasi(string $kode): ?array {
 }
 
 /**
- * Opsi kurir yang dipilih pada satu tujuan (dipakai untuk total & pesan WA).
+ * Opsi pengiriman yang dipilih pada satu tujuan, termasuk COD (dipakai untuk total & pesan WA).
  * Mengembalikan null bila tujuan/kurir tidak cocok.
  */
 function ongkir_pilihan(string $kodeTujuan, string $kurir): ?array {
@@ -230,6 +246,7 @@ function ongkir_pilihan(string $kodeTujuan, string $kurir): ?array {
                 'layanan'   => $o['layanan'],
                 'tarif'     => $o['tarif'],
                 'eta'       => $o['eta'],
+                'cod'       => !empty($o['cod']),
                 'destinasi' => $estimasi['nama'] . ', ' . $estimasi['kota'],
                 'jarak'     => $estimasi['jarak'],
                 'berat'     => $estimasi['berat'],
