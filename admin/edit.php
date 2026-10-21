@@ -157,7 +157,6 @@ require __DIR__ . '/../includes/admin-head.php';
                         <span class="warna-palet-dot" style="background:<?= e($w['hex']) ?>"></span>
                         <span class="warna-palet-teks">
                             <span class="warna-palet-nama"><?= e($w['nama']) ?></span>
-                            <span class="warna-palet-ket"><?= e($w['hex']) ?> (<?= e($w['ket'] ?? '') ?>)</span>
                         </span>
                     </label>
                     <?php endforeach; ?>
