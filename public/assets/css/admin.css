@@ -60,8 +60,11 @@ body.halaman-admin{display:block}
 .admin-cek-inline{display:flex;gap:12px;flex-wrap:wrap;margin-top:14px}
 
 /* Palet pilihan warna produk */
-.warna-palet{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
+.warna-palet{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px}
 .warna-palet-item{display:flex;align-items:center;gap:8px;background:var(--bg);border:var(--bd);border-radius:12px;padding:8px 12px;font-size:12.5px;font-weight:700;cursor:pointer;box-shadow:var(--shadow-sm)}
+.warna-palet-teks{display:flex;flex-direction:column;gap:1px;min-width:0}
+.warna-palet-nama{line-height:1.25}
+.warna-palet-ket{color:var(--faint);font-size:10.5px;font-weight:600;letter-spacing:.2px}
 .warna-palet-item.aktif{outline:2px solid var(--accent);outline-offset:1px}
 .warna-palet-item input{accent-color:var(--accent);width:16px;height:16px}
 .warna-palet-dot{width:20px;height:20px;border-radius:50%;border:1px solid rgba(75,75,110,.18);box-shadow:inset 0 0 0 2px #fff;flex:0 0 auto}

@@ -141,20 +141,24 @@ require __DIR__ . '/../includes/admin-head.php';
                     </div>
                 </div>
 
-                <label class="admin-label">Pilihan Warna di Detail Produk <span class="admin-label-note">6 warna tetap</span></label>
+                <?php $palet_admin = produk_palet_warna(); ?>
+                <label class="admin-label">Pilihan Warna di Detail Produk <span class="admin-label-note"><?= count($palet_admin) ?> warna tetap</span></label>
                 <div class="warna-palet">
                     <?php
                     $hex_dipilih = array_map(
                         fn($w) => strtoupper(ltrim((string)($w['hex'] ?? ''), '#')),
                         $f['pilihan_warna']
                     );
-                    foreach (produk_palet_warna() as $kunci => $w):
+                    foreach ($palet_admin as $kunci => $w):
                         $aktif = in_array(strtoupper(ltrim($w['hex'], '#')), $hex_dipilih, true);
                     ?>
                     <label class="warna-palet-item<?= $aktif ? ' aktif' : '' ?>">
                         <input type="checkbox" name="warna_pilih[]" value="<?= e($kunci) ?>" <?= $aktif ? 'checked' : '' ?>>
                         <span class="warna-palet-dot" style="background:<?= e($w['hex']) ?>"></span>
-                        <span><?= e($w['nama']) ?></span>
+                        <span class="warna-palet-teks">
+                            <span class="warna-palet-nama"><?= e($w['nama']) ?></span>
+                            <span class="warna-palet-ket"><?= e($w['hex']) ?> (<?= e($w['ket'] ?? '') ?>)</span>
+                        </span>
                     </label>
                     <?php endforeach; ?>
                 </div>
