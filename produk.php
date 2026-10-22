@@ -52,7 +52,6 @@ require __DIR__ . '/includes/header.php';
             <?php foreach ($galeri as $i => $g): ?>
             <button class="thumb-btn <?= $i === 0 ? 'aktif' : '' ?>" data-src="<?= e(gambar_url($g)) ?>" data-index="<?= $i ?>">
                 <img src="<?= e(gambar_url($g)) ?>" alt="<?= e($p['nama']) ?> - foto <?= e($label_galeri[$i] ?? ($i + 1)) ?>" loading="lazy">
-                <span><?= e($label_galeri[$i] ?? ($i + 1)) ?></span>
             </button>
             <?php endforeach; ?>
         </div>
