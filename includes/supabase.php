@@ -100,7 +100,6 @@ function sb_request(string $method, string $path, ?array $body = null, string $q
         $mentah = curl_exec($ch);
         $status = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $galat  = curl_error($ch);
-        curl_close($ch);
         if ($mentah === false) {
             $hasil['error'] = $galat !== '' ? $galat : 'Koneksi ke Supabase gagal.';
             $GLOBALS['sb_error_terakhir'] = $hasil['error'];
@@ -114,9 +113,18 @@ function sb_request(string $method, string $path, ?array $body = null, string $q
             'timeout'       => 10,
             'ignore_errors' => true,
         ]]);
-        $mentah = @file_get_contents($url, false, $konteks);
         $status = 0;
-        if (!empty($http_response_header[0]) && preg_match('#\s(\d{3})\s#', $http_response_header[0], $m)) {
+        $aliran = @fopen($url, 'rb', false, $konteks);
+        if ($aliran === false) {
+            $hasil['error'] = 'Koneksi ke Supabase gagal.';
+            $GLOBALS['sb_error_terakhir'] = $hasil['error'];
+            return $hasil;
+        }
+        $meta = stream_get_meta_data($aliran);
+        $header_http = is_array($meta['wrapper_data'] ?? null) ? $meta['wrapper_data'] : [];
+        $mentah = stream_get_contents($aliran);
+        fclose($aliran);
+        if (!empty($header_http[0]) && preg_match('#\s(\d{3})\s#', $header_http[0], $m)) {
             $status = (int)$m[1];
         }
         if ($mentah === false) {
