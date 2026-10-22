@@ -38,6 +38,7 @@ require_once __DIR__ . '/cloudinary.php';
 require_once __DIR__ . '/produk-store.php';
 require_once __DIR__ . '/pesan-store.php';
 require_once __DIR__ . '/sosmed-store.php';
+require_once __DIR__ . '/statistik-store.php';
 require_once __DIR__ . '/ongkir.php';
 
 // Muat produk dari JSON admin (jika ada), else default dari data.php.
@@ -263,3 +264,6 @@ function csrf_cek(): bool {
         && $_COOKIE['csrf'] !== ''
         && hash_equals($_COOKIE['csrf'], (string)$_POST['csrf']);
 }
+
+/* Catat kunjungan halaman publik (sekali per request, GET saja). */
+statistik_catat();

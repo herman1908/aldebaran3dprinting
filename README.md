@@ -81,6 +81,8 @@ Untuk lokal, file `.env` dibaca otomatis. Di **Vercel**, isi lewat **Project →
    di tabel `admin_akun` dan bisa diganti kapan saja dari web.
 6. Bila penyimpanan gagal, buka **`/admin/status`** untuk melihat apakah env terbaca,
    role kunci benar (`service_role`), tabel sudah dibuat, dan uji tulis database.
+7. Statistik pengunjung harian/mingguan disimpan di tabel `kunjungan`. Jalankan ulang
+   `supabase/schema.sql` (aman diulang) agar tabel ini dibuat di project yang sudah ada.
 
 Catatan keamanan: `SUPABASE_SERVICE_KEY` adalah kunci penuh database. Jangan pernah
 menaruhnya di JavaScript, HTML, atau repo publik. File `.env` sudah di-.gitignore.

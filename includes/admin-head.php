@@ -28,6 +28,7 @@ $judul_halaman = $judul_halaman ?? 'Admin';
     </a>
     <nav class="admin-nav">
         <a href="/admin/">Produk</a>
+        <a href="/admin/#statistik">Statistik</a>
         <a href="/admin/edit.php">Tambah</a>
         <?php $belum_dibaca = pesan_belum_dibaca(); ?>
         <a href="/admin/pesan.php">Pesan<?php if ($belum_dibaca > 0): ?><span class="admin-nav-badge"><?= (int)$belum_dibaca ?></span><?php endif; ?></a>

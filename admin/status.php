@@ -61,6 +61,7 @@ $tabel_uji = [
     'sosmed'      => 'select=*&limit=1',
     'pesan'       => 'select=*&limit=1',
     'checkout_stat' => 'select=*&limit=1',
+    'kunjungan'   => 'select=*&limit=1',
     'pengaturan'  => 'select=kunci&limit=1',
     'admin_akun'  => 'select=id&limit=1',
 ];

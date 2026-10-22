@@ -7,3 +7,4 @@ node_modules
 vendor
 data/checkout.json
 data/pesan.json
+data/kunjungan.json

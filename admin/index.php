@@ -52,6 +52,15 @@ $terlaris_ids = produk_terlaris_ids();
 $terlaris  = count($terlaris_ids);
 $siap_cloud = cloudinary_siap();
 
+// Statistik pengunjung (akumulatif di Supabase, fallback file lokal).
+$stat              = statistik_ringkas();
+$stat_harian       = $stat['harian'];
+$stat_mingguan     = $stat['mingguan'];
+$stat_hari_ini     = $stat['hari_ini'] ?: ['unik' => 0, 'views' => 0, 'random_unik' => 0, 'random_views' => 0, 'klik_unik' => 0, 'klik_views' => 0];
+$stat_minggu_ini   = $stat['minggu_ini'] ?: ['unik' => 0, 'views' => 0, 'random_unik' => 0, 'random_views' => 0, 'klik_unik' => 0, 'klik_views' => 0];
+$stat_halaman_klik = statistik_halaman_populer($stat['rows'], 8, 'klik');
+$stat_halaman_rand = statistik_halaman_populer($stat['rows'], 8, 'random');
+
 $judul_halaman = 'Admin — Kelola Produk';
 require __DIR__ . '/../includes/admin-head.php';
 ?>
@@ -92,6 +101,150 @@ require __DIR__ . '/../includes/admin-head.php';
 
     <?php if ($pesan !== ''): ?><div class="admin-sukses"><?= e($pesan) ?></div><?php endif; ?>
     <?php if ($galat !== ''): ?><div class="admin-galat"><?= e($galat) ?></div><?php endif; ?>
+
+    <section class="stat-blok" id="statistik">
+        <div class="stat-kepala">
+            <div>
+                <h2>Statistik Pengunjung</h2>
+                <p>
+                    Tersimpan di <strong><?= sb_aktif() ? 'Supabase' : 'file lokal (data/kunjungan.json)' ?></strong> dan terus terakumulasi.
+                    <span class="stat-legend"><i class="dot-random"></i>Random = datang langsung/eksternal</span>
+                    <span class="stat-legend"><i class="dot-klik"></i>Klik = pindah halaman dari dalam situs</span>
+                </p>
+            </div>
+            <span class="stat-periode"><?= (int)$stat['periode'] ?> hari terakhir &middot; <?= (int)$stat['total_unik'] ?> unik &middot; <?= (int)$stat['total_views'] ?> kunjungan</span>
+        </div>
+
+        <div class="stat-grid">
+            <div class="stat-kartu stat-netral">
+                <span class="stat-label">Pengunjung hari ini</span>
+                <strong class="stat-nilai"><?= (int)$stat_hari_ini['unik'] ?></strong>
+                <span class="stat-sub"><?= (int)$stat_hari_ini['views'] ?> kunjungan halaman</span>
+            </div>
+            <div class="stat-kartu stat-netral">
+                <span class="stat-label">Pengunjung minggu ini</span>
+                <strong class="stat-nilai"><?= (int)$stat_minggu_ini['unik'] ?></strong>
+                <span class="stat-sub"><?= (int)$stat_minggu_ini['views'] ?> kunjungan halaman</span>
+            </div>
+            <div class="stat-kartu stat-random">
+                <span class="stat-label">Random hari ini</span>
+                <strong class="stat-nilai"><?= (int)$stat_hari_ini['random_unik'] ?></strong>
+                <span class="stat-sub"><?= (int)$stat_hari_ini['random_views'] ?> kunjungan langsung/eksternal</span>
+            </div>
+            <div class="stat-kartu stat-klik">
+                <span class="stat-label">Halaman diklik hari ini</span>
+                <strong class="stat-nilai"><?= (int)$stat_hari_ini['klik_unik'] ?></strong>
+                <span class="stat-sub"><?= (int)$stat_hari_ini['klik_views'] ?> kunjungan dari klik menu</span>
+            </div>
+        </div>
+
+        <div class="stat-dua">
+            <div class="stat-kartu stat-random">
+                <span class="stat-label">Pengunjung Random</span>
+                <strong class="stat-nilai"><?= (int)$stat_minggu_ini['random_unik'] ?></strong>
+                <span class="stat-sub">unik minggu ini &middot; <?= (int)$stat_minggu_ini['random_views'] ?> kunjungan</span>
+            </div>
+            <div class="stat-kartu stat-klik">
+                <span class="stat-label">Halaman yang Diklik</span>
+                <strong class="stat-nilai"><?= (int)$stat_minggu_ini['klik_unik'] ?></strong>
+                <span class="stat-sub">unik minggu ini &middot; <?= (int)$stat_minggu_ini['klik_views'] ?> kunjungan</span>
+            </div>
+        </div>
+
+        <div class="stat-dua">
+            <div class="stat-panel">
+                <h3>Harian &mdash; 7 hari terakhir</h3>
+                <div class="stat-tabel-bungkus">
+                    <table class="admin-tabel stat-tabel">
+                        <thead>
+                            <tr><th>Tanggal</th><th>Random</th><th>Halaman diklik</th><th>Total</th></tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach (array_reverse($stat_harian) as $h): ?>
+                            <tr>
+                                <td>
+                                    <strong><?= e(statistik_label_tanggal($h['tanggal'])) ?></strong>
+                                    <?php if ($h['tanggal'] === date('Y-m-d')): ?><span class="stat-badge">hari ini</span><?php endif; ?>
+                                </td>
+                                <td><?= (int)$h['random_unik'] ?> unik<span class="admin-sub"><?= (int)$h['random_views'] ?> kunjungan</span></td>
+                                <td><?= (int)$h['klik_unik'] ?> unik<span class="admin-sub"><?= (int)$h['klik_views'] ?> kunjungan</span></td>
+                                <td><strong><?= (int)$h['unik'] ?></strong> unik<span class="admin-sub"><?= (int)$h['views'] ?> kunjungan</span></td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="stat-panel">
+                <h3>Mingguan &mdash; 8 minggu terakhir</h3>
+                <div class="stat-tabel-bungkus">
+                    <table class="admin-tabel stat-tabel">
+                        <thead>
+                            <tr><th>Minggu</th><th>Random</th><th>Halaman diklik</th><th>Total</th></tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach (array_reverse($stat_mingguan) as $m): ?>
+                            <tr>
+                                <td>
+                                    <strong><?= e(statistik_label_minggu($m['mulai'], $m['selesai'])) ?></strong>
+                                    <?php if ($m['minggu'] === date('Y-m-d', strtotime('monday this week'))): ?><span class="stat-badge">minggu ini</span><?php endif; ?>
+                                </td>
+                                <td><?= (int)$m['random_unik'] ?> unik<span class="admin-sub"><?= (int)$m['random_views'] ?> kunjungan</span></td>
+                                <td><?= (int)$m['klik_unik'] ?> unik<span class="admin-sub"><?= (int)$m['klik_views'] ?> kunjungan</span></td>
+                                <td><strong><?= (int)$m['unik'] ?></strong> unik<span class="admin-sub"><?= (int)$m['views'] ?> kunjungan</span></td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-dua">
+            <div class="stat-panel">
+                <h3>Halaman paling sering diklik</h3>
+                <div class="stat-tabel-bungkus">
+                    <table class="admin-tabel stat-tabel">
+                        <thead><tr><th>Halaman</th><th class="admin-kanan">Kunjungan</th><th class="admin-kanan">Unik</th></tr></thead>
+                        <tbody>
+                            <?php if (!$stat_halaman_klik): ?>
+                                <tr><td colspan="3" class="admin-kosong">Belum ada klik halaman.</td></tr>
+                            <?php endif; ?>
+                            <?php foreach ($stat_halaman_klik as $hp): ?>
+                            <tr>
+                                <td><strong><?= e(statistik_nama_halaman($hp['halaman'])) ?></strong><span class="admin-sub"><?= e($hp['halaman']) ?></span></td>
+                                <td class="admin-kanan"><?= (int)$hp['views'] ?></td>
+                                <td class="admin-kanan"><?= (int)$hp['unik'] ?></td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="stat-panel">
+                <h3>Halaman masuk pengunjung random</h3>
+                <div class="stat-tabel-bungkus">
+                    <table class="admin-tabel stat-tabel">
+                        <thead><tr><th>Halaman</th><th class="admin-kanan">Kunjungan</th><th class="admin-kanan">Unik</th></tr></thead>
+                        <tbody>
+                            <?php if (!$stat_halaman_rand): ?>
+                                <tr><td colspan="3" class="admin-kosong">Belum ada kunjungan random.</td></tr>
+                            <?php endif; ?>
+                            <?php foreach ($stat_halaman_rand as $hp): ?>
+                            <tr>
+                                <td><strong><?= e(statistik_nama_halaman($hp['halaman'])) ?></strong><span class="admin-sub"><?= e($hp['halaman']) ?></span></td>
+                                <td class="admin-kanan"><?= (int)$hp['views'] ?></td>
+                                <td class="admin-kanan"><?= (int)$hp['unik'] ?></td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <div class="admin-tabel-bungkus">
         <table class="admin-tabel">
