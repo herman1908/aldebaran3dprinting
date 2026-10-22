@@ -114,6 +114,16 @@ body.halaman-admin{display:block}
 .pesan-aksi form{margin:0}
 
 /* Statistik pengunjung */
+.stat-accordion{margin:0 0 26px;background:rgba(255,255,255,.7);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border:1.5px solid rgba(255,255,255,.7);border-radius:20px;box-shadow:0 10px 30px rgba(75,75,110,.12), inset 0 1px 0 rgba(255,255,255,.9);overflow:hidden}
+.stat-accordion-kepala{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:16px 20px;cursor:pointer;user-select:none;transition:background .15s}
+.stat-accordion-kepala::-webkit-details-marker{display:none}
+.stat-accordion-kepala:hover{background:rgba(255,255,255,.5)}
+.stat-accordion-kepala h2{font-family:var(--font-judul);font-size:20px;font-weight:800;margin:0}
+.stat-accordion-kepala p{margin:3px 0 0;color:var(--muted);font-size:12px;font-weight:700}
+.stat-accordion-kanan{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.stat-accordion-ikon{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--bg);box-shadow:var(--sh-brutal-sm);color:var(--muted);font-size:15px;font-weight:800;transition:transform .2s;flex:0 0 auto}
+.stat-accordion[open] .stat-accordion-ikon{transform:rotate(180deg)}
+.stat-accordion-isi{padding:16px 20px 20px;border-top:1px solid var(--line-soft)}
 .stat-blok{margin:0 0 26px}
 .stat-kepala{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:14px}
 .stat-kepala h2{font-family:var(--font-judul);font-size:22px;font-weight:800;margin:0}

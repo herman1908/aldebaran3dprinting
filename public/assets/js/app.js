@@ -324,7 +324,16 @@
         });
 
         // Tunggu jumlah tersimpan sebelum lanjut checkout.
-        document.querySelectorAll('form').forEach(function (form) {
+    var accStatistik = document.getElementById('statistik');
+    if (accStatistik && accStatistik.tagName === 'DETAILS') {
+        var bukaStatistik = function () {
+            if (window.location.hash === '#statistik') accStatistik.open = true;
+        };
+        bukaStatistik();
+        window.addEventListener('hashchange', bukaStatistik);
+    }
+
+    document.querySelectorAll('form').forEach(function (form) {
             var aksi = form.querySelector('input[name="aksi"]');
             if (!aksi || aksi.value !== 'checkout') return;
             form.addEventListener('submit', function (ev) {

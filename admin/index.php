@@ -113,16 +113,23 @@ require __DIR__ . '/../includes/admin-head.php';
     <?php if ($pesan !== ''): ?><div class="admin-sukses"><?= e($pesan) ?></div><?php endif; ?>
     <?php if ($galat !== ''): ?><div class="admin-galat"><?= e($galat) ?></div><?php endif; ?>
 
-    <section class="stat-blok" id="statistik">
-        <div class="stat-kepala">
+    <details class="stat-accordion" id="statistik">
+        <summary class="stat-accordion-kepala">
             <div>
                 <h2>Statistik Pengunjung</h2>
-                <p>
-                    Tersimpan di <strong><?= sb_aktif() ? 'Supabase' : 'file lokal (data/kunjungan.json)' ?></strong> dan terus terakumulasi.
-                    <span class="stat-legend"><i class="dot-random"></i>Random = datang langsung/eksternal</span>
-                    <span class="stat-legend"><i class="dot-klik"></i>Klik = pindah halaman dari dalam situs</span>
-                </p>
+                <p>Klik untuk membuka statistik harian, mingguan, dan klasifikasi pengunjung.</p>
             </div>
+            <span class="stat-accordion-kanan">
+                <span class="stat-accordion-ikon" aria-hidden="true">⌄</span>
+            </span>
+        </summary>
+        <div class="stat-accordion-isi">
+        <div class="stat-kepala">
+            <p>
+                Tersimpan di <strong><?= sb_aktif() ? 'Supabase' : 'file lokal (data/kunjungan.json)' ?></strong> dan terus terakumulasi.
+                <span class="stat-legend"><i class="dot-random"></i>Random = datang langsung/eksternal</span>
+                <span class="stat-legend"><i class="dot-klik"></i>Klik = pindah halaman dari dalam situs</span>
+            </p>
             <span class="stat-periode"><?= (int)$stat['periode'] ?> hari terakhir &middot; <?= (int)$stat['total_unik'] ?> unik &middot; <?= (int)$stat['total_views'] ?> kunjungan</span>
         </div>
 
@@ -283,7 +290,8 @@ require __DIR__ . '/../includes/admin-head.php';
                 </div>
             </div>
         </div>
-    </section>
+        </div>
+    </details>
 
     <div class="admin-tabel-bungkus">
         <table class="admin-tabel">
