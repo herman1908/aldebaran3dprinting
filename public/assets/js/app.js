@@ -63,6 +63,16 @@
             var nama = d.getAttribute('data-nama');
             if (label && nama) label.textContent = nama;
             if (input && nama) input.value = nama;
+
+            // Gambar utama ikut berganti sesuai warna yang dipilih.
+            var gambar = d.getAttribute('data-gambar');
+            var utama = document.getElementById('gambarUtama');
+            if (gambar && utama) utama.src = gambar;
+
+            var idxGambar = d.getAttribute('data-gambar-index');
+            document.querySelectorAll('.thumb-btn').forEach(function (t) {
+                t.classList.toggle('aktif', t.getAttribute('data-index') === idxGambar);
+            });
         });
     });
 

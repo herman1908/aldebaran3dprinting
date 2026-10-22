@@ -79,11 +79,15 @@ require __DIR__ . '/includes/header.php';
         <?php if ($pilihan_warna): ?>
         <div class="warna-picker" aria-label="Pilih warna">
             <strong style="font-size:13.5px">Pilih warna:</strong>
-            <?php foreach ($pilihan_warna as $i => $w): ?>
+            <?php foreach ($pilihan_warna as $i => $w):
+                $idx_gambar = isset($galeri[$i]) ? $i : 0;
+            ?>
                 <button type="button"
                         class="warna-dot<?= $i === 0 ? ' aktif' : '' ?>"
                         style="background:<?= e($w['hex']) ?>"
                         data-nama="<?= e($w['nama']) ?>"
+                        data-gambar="<?= e(gambar_url($galeri[$idx_gambar] ?? '')) ?>"
+                        data-gambar-index="<?= $idx_gambar ?>"
                         title="<?= e($w['nama']) ?>"
                         aria-label="<?= e($w['nama']) ?>"
                         aria-pressed="<?= $i === 0 ? 'true' : 'false' ?>"></button>
