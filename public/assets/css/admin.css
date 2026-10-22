@@ -140,6 +140,35 @@ body.halaman-admin{display:block}
 .stat-tabel thead th{padding:9px 8px}
 .stat-tabel tbody td{padding:9px 8px;font-size:12.5px}
 
+/* Grafik batang pengunjung (memanjang penuh) */
+.stat-grafik-panel{background:rgba(255,255,255,.7);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border:1.5px solid rgba(255,255,255,.7);border-radius:20px;box-shadow:0 10px 30px rgba(75,75,110,.12), inset 0 1px 0 rgba(255,255,255,.9);padding:18px 20px;margin-bottom:12px}
+.stat-grafik-kepala{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+.stat-grafik-kepala h3{font-family:var(--font-judul);font-size:15px;font-weight:800;margin:0}
+.stat-grafik-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;font-weight:800;color:var(--muted)}
+.stat-grafik-legend span{display:inline-flex;align-items:center;gap:6px}
+.stat-grafik-legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.stat-grafik-legend .dot-random{background:linear-gradient(180deg,#A9CCFF,#7FB2FF)}
+.stat-grafik-legend .dot-klik{background:linear-gradient(180deg,#D4C4FF,#B99CFF)}
+.stat-grafik-area{position:relative;padding:22px 0 0}
+.stat-grafik-bars{display:flex;align-items:stretch;justify-content:space-between;gap:clamp(4px,1.2vw,18px);height:200px;padding:0 6px;border-bottom:1.5px solid var(--line);background-image:repeating-linear-gradient(to top,rgba(75,75,110,.09) 0 1px,transparent 1px 48px);border-radius:10px 10px 0 0}
+.stat-grafik-grup{flex:1 1 0;height:100%;min-width:0;display:flex;flex-direction:column}
+.stat-grafik-pasangan{flex:1 1 auto;min-height:0;display:flex;align-items:flex-end;justify-content:center;gap:clamp(2px,.5vw,6px)}
+.stat-grafik-batang{position:relative;height:100%;width:clamp(9px,18%,26px);display:flex;align-items:flex-end;justify-content:center}
+.stat-bar{display:block;width:100%;border-radius:6px 6px 2px 2px;transition:height .3s ease}
+.bar-random{background:linear-gradient(180deg,#A9CCFF,#7FB2FF);box-shadow:0 3px 8px rgba(127,178,255,.35)}
+.bar-klik{background:linear-gradient(180deg,#D4C4FF,#B99CFF);box-shadow:0 3px 8px rgba(185,156,255,.35)}
+.stat-bar-nilai{position:absolute;left:50%;transform:translateX(-50%);font-style:normal;font-size:9.5px;font-weight:800;color:var(--muted);line-height:1;pointer-events:none;white-space:nowrap}
+.stat-grafik-label{margin-top:8px;text-align:center;font-size:11px;font-weight:800;color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stat-grafik-label.ini{color:var(--accent-ink)}
+.stat-grafik-kosong{position:absolute;inset:22px 0 28px;display:grid;place-items:center;color:var(--faint);font-size:12px;font-weight:800;background:rgba(255,255,255,.45);border-radius:12px;pointer-events:none;z-index:2}
+.stat-grafik-foot{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:12px;font-size:11.5px;font-weight:700;color:var(--muted)}
+.stat-grafik-foot strong{color:var(--ink)}
+@media (max-width: 640px){
+    .stat-grafik-area{overflow-x:auto}
+    .stat-grafik-bars{min-width:560px}
+    .stat-grafik-label{font-size:10px}
+}
+
 @media (max-width: 860px){
     .admin-grid{grid-template-columns:1fr}
     .admin-row2{grid-template-columns:1fr}

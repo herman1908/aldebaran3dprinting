@@ -357,6 +357,23 @@ function statistik_label_tanggal(string $tanggal): string {
     return date('j', $ts) . ' ' . $bulan[(int)date('n', $ts)] . ' ' . date('Y', $ts);
 }
 
+/** Label hari ringkas untuk sumbu grafik: 22 Okt. */
+function statistik_label_hari_singkat(string $tanggal): string {
+    $bulan = [1 => 'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+    $ts = strtotime($tanggal . ' 12:00:00');
+    if ($ts === false) return $tanggal;
+    return date('j', $ts) . ' ' . $bulan[(int)date('n', $ts)];
+}
+
+/** Label minggu ringkas untuk sumbu grafik: 19–25 Okt. */
+function statistik_label_minggu_singkat(string $mulai, string $selesai): string {
+    $bulan = [1 => 'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+    $a = strtotime($mulai . ' 12:00:00');
+    $b = strtotime($selesai . ' 12:00:00');
+    if ($a === false || $b === false) return $mulai;
+    return date('j', $a) . '–' . date('j', $b) . ' ' . $bulan[(int)date('n', $b)];
+}
+
 /** Label minggu ringkas: 20–26 Okt 2026. */
 function statistik_label_minggu(string $mulai, string $selesai): string {
     $bulan = [1 => 'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
