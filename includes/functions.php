@@ -66,6 +66,21 @@ function e(string $s): string {
     return htmlspecialchars($s, ENT_QUOTES, 'UTF-8');
 }
 
+/** URL dasar situs tanpa garis miring di akhir (bisa ditimpa lewat env SITE_URL). */
+function url_situs(): string {
+    $env = trim((string)(getenv('SITE_URL') ?: ''));
+    if ($env !== '') return rtrim($env, '/');
+    $host  = $_SERVER['HTTP_HOST'] ?? 'localhost';
+    $skema = https_aktif() ? 'https' : 'http';
+    return $skema . '://' . $host;
+}
+
+/** Ubah path lokal atau URL relatif menjadi URL absolut (wajib untuk og:image). */
+function url_absolut(string $path): string {
+    if (preg_match('#^https?://#i', $path)) return $path;
+    return url_situs() . '/' . ltrim($path, '/');
+}
+
 function rupiah(int $angka): string {
     return 'Rp ' . number_format($angka, 0, ',', '.');
 }

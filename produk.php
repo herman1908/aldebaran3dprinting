@@ -29,6 +29,22 @@ if (!$galeri && ($p['gambar'] ?? '') !== '') $galeri = [$p['gambar']];
 if (!$galeri) $galeri = [''];
 $label_galeri = ['Utama', 'B', 'C', 'D', 'E', 'F'];
 $terlaris_set = produk_terlaris_set();
+
+// Pratinjau tautan memakai foto produk ini (WhatsApp/Facebook/Telegram).
+$og_judul     = $p['nama'] . ' | ' . NAMA_TOKO;
+$og_deskripsi = $p['nama'] . ' — ' . rupiah((int)$p['harga']) . '. ' . ($p['deskripsi'] ?? '');
+$og_url       = url_absolut('/produk.php?id=' . $p['id']);
+if (($galeri[0] ?? '') !== '') {
+    $og_gambar = gambar_url($galeri[0]);
+    if (!preg_match('#^https?://#i', $og_gambar)) {
+        $berkas_og = __DIR__ . '/public' . $og_gambar;
+        if (is_file($berkas_og) && ($ukuran_og = @getimagesize($berkas_og))) {
+            $og_gambar_lebar  = $ukuran_og[0];
+            $og_gambar_tinggi = $ukuran_og[1];
+            $og_gambar_tipe   = $ukuran_og['mime'];
+        }
+    }
+}
 require __DIR__ . '/includes/header.php';
 ?>
 

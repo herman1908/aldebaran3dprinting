@@ -56,6 +56,7 @@ Salin `.env.example` jadi `.env`, lalu isi:
 | `CLOUDINARY_UPLOAD_PRESET` | Nama upload preset bertipe **Unsigned** |
 | `CLOUDINARY_FOLDER` | Folder Media Library tujuan upload (opsional, default `ruang-3d`) |
 | `APP_SECRET` | Teks acak panjang untuk menandatangani cookie |
+| `SITE_URL` | URL publik situs (opsional, untuk `og:image`/thumbnail tautan; contoh `https://aldebaran3dprinting.vercel.app`) |
 
 Untuk lokal, file `.env` dibaca otomatis. Di **Vercel**, isi lewat **Project → Settings → Environment Variables**, lalu deploy ulang.
 
