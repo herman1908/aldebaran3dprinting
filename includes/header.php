@@ -9,7 +9,7 @@ $og_deskripsi  = $og_deskripsi  ?? 'Aldebaran3DPrinting — studio cetak 3D: fid
 $og_tipe       = $og_tipe       ?? 'website';
 $og_gambar     = $og_gambar     ?? '/images/og-banner-2026.jpg';
 $og_url        = $og_url        ?? url_absolut($_SERVER['REQUEST_URI'] ?? '/');
-$og_gambar_abs = url_absolut($og_gambar);
+$og_gambar_abs = og_gambar_url($og_gambar);
 
 // Banner bawaan berukuran 1200x630; halaman produk boleh mengisi sendiri.
 if ($og_gambar === '/images/og-banner-2026.jpg') {

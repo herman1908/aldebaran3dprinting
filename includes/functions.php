@@ -81,6 +81,19 @@ function url_absolut(string $path): string {
     return url_situs() . '/' . ltrim($path, '/');
 }
 
+/**
+ * CDN publik untuk thumbnail tautan (og:image).
+ * WhatsApp sering gagal mengambil gambar langsung dari file statis Vercel,
+ * jadi gambar lokal diambil lewat jsDelivr dari repo GitHub yang publik.
+ */
+const OG_CDN = 'https://cdn.jsdelivr.net/gh/herman1908/aldebaran3dprinting@main/public';
+
+/** URL absolut gambar og:image (lokal lewat CDN, URL http/https dipakai apa adanya). */
+function og_gambar_url(string $path): string {
+    if (preg_match('#^https?://#i', $path)) return $path;
+    return OG_CDN . '/' . ltrim($path, '/');
+}
+
 function rupiah(int $angka): string {
     return 'Rp ' . number_format($angka, 0, ',', '.');
 }

@@ -127,6 +127,7 @@ Di Vercel buka **Project > Settings > Domains**, tambahkan domain Anda, lalu atu
 
 ## Catatan
 
+- Thumbnail tautan (`og:image`) memakai jsDelivr yang membaca repo GitHub ini, jadi repo harus tetap **publik**. Jika repo dijadikan privat, ganti `OG_CDN` di `includes/functions.php` dengan URL gambar publik lain.
 - Keranjang disimpan di cookie browser (tanpa database), jadi isinya hilang jika cookie dihapus. Checkout masih demo dan belum terhubung pembayaran.
 - Vercel tidak menjalankan PHP secara bawaan. Proyek ini memakai runtime komunitas `vercel-php` yang diatur di `vercel.json`.
 - Paket gratis (Hobby) Vercel ditujukan untuk pemakaian non-komersial. Jika situs dipakai untuk berjualan sungguhan, cek ketentuan paketnya.
