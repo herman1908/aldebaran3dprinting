@@ -153,7 +153,7 @@ require __DIR__ . '/../includes/admin-head.php';
                         $aktif = in_array(strtoupper(ltrim($w['hex'], '#')), $hex_dipilih, true);
                     ?>
                     <label class="warna-palet-item<?= $aktif ? ' aktif' : '' ?>">
-                        <input type="checkbox" name="warna_pilih[]" value="<?= e($kunci) ?>" <?= $aktif ? 'checked' : '' ?>>
+                        <input type="checkbox" name="warna_pilih[]" value="<?= e($kunci) ?>" <?= $aktif ? '' : '' ?>>
                         <span class="warna-palet-dot" style="background:<?= e($w['hex']) ?>"></span>
                         <span class="warna-palet-teks">
                             <span class="warna-palet-nama"><?= e($w['nama']) ?></span>
