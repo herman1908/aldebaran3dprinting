@@ -114,11 +114,12 @@ require __DIR__ . '/includes/header.php';
 
     <div class="hero-teks">
         <span class="hero-badge"><span class="dot">Fun</span> Warna &amp; bentuk bebas kamu atur sendiri</span>
-        <h1>Mainan 3D yang bikin kamar &amp; mood <span class="hl-grad">auto ceria!</span></h1>
-        <p>Clicker anti-bosan, figure gemas, sampai dekor kamar aesthetic. Dicetak presisi, warnanya bisa custom, dan siap bikin teman-teman kamu iri (dalam artian baik ya).</p>
+        <h1>🚀 ALDEBARAN 3D PRINT &amp; mood <span class="hl-grad">Ide Kreatif, Dicetak Jadi Nyata!</span></h1>
+        <p>Temukan berbagai kreasi 3D printing yang unik, lucu, dan penuh warna! 😍 🎮 Kliker Nama • Mainan Fidget • Gantungan Kunci • Action Figure Hero & Kartun • Jibbitz Crocs dan masih banyak lagi!.</p>
+        <p>✨ *Penasaran dengan koleksinya? Yuk, scroll ke bawah dan temukan kreasi favoritmu!* 👇 </p>
         <div class="hero-cta-row">
             <a class="tombol besar" href="#produk">Gas jelajah <span aria-hidden="true">→</span></a>
-            <a class="tombol besar ghost" href="#produk">Ide custom</a>
+            <!-- <a class="tombol besar ghost" href="#produk">Ide custom</a> -->
         </div>
         <div class="hero-stats">
             <div class="hero-stat"><strong><?= count($produk) ?>+</strong><span>Produk lucu</span></div>
