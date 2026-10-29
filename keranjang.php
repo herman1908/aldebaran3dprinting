@@ -20,14 +20,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $qty   = max(1, min(99, (int)($_POST['qty'] ?? 1)));
     $kunci = trim((string)($_POST['kunci'] ?? ''));
     $warna = trim((string)($_POST['warna'] ?? ''));
+    $huruf = max(0, (int)($_POST['huruf'] ?? 0));
 
-    if ($kunci !== '') [$id, $warna] = keranjang_urai($kunci);
+    if ($kunci !== '') [$id, $warna, $huruf] = keranjang_urai($kunci);
 
     $k    = keranjang();
     $kode = '';
     $p    = cari_produk($id);
     $warna = $p ? produk_warna_pilih($p, $warna) : '';
-    $kunci = $p ? keranjang_kunci($id, $warna) : '';
+    if ($p && produk_huruf_aktif($p)) {
+        $maks  = (int)(produk_huruf_config($p)['maks'] ?? PRODUK_HURUF_MAKS);
+        $huruf = max(1, min($maks, $huruf));
+    } else {
+        $huruf = 0;
+    }
+    $kunci = $p ? keranjang_kunci($id, $warna, $huruf) : '';
 
     if ($aksi === 'tambah' && $p) {
         $k[$kunci] = min(99, ($k[$kunci] ?? 0) + $qty);
@@ -62,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $tarif    = (int)($ongkir['tarif'] ?? 0);
         $baris    = 0;
         if (isset($k[$kunci])) {
-            if ($p) $baris = (int)$p['harga'] * (int)$k[$kunci];
+            if ($p) $baris = produk_harga($p, $huruf) * (int)$k[$kunci];
         }
 
         header('Content-Type: application/json; charset=utf-8');
@@ -72,6 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'id'       => $id,
             'kunci'    => $kunci,
             'warna'    => $warna,
+            'huruf'    => $huruf,
             'qty'      => (int)($k[$kunci] ?? 0),
             'baris'    => $baris,
             'subtotal' => $subtotal,
@@ -129,18 +137,20 @@ require __DIR__ . '/includes/header.php';
         </thead>
         <tbody>
         <?php foreach (keranjang() as $kunci => $qty):
-            [$id, $warna] = keranjang_urai((string)$kunci);
+            [$id, $warna, $huruf] = keranjang_urai((string)$kunci);
             $p = cari_produk($id);
-            if (!$p) continue; ?>
-            <tr data-harga="<?= (int)$p['harga'] ?>">
+            if (!$p) continue;
+            $harga_baris = produk_harga($p, $huruf); ?>
+            <tr data-harga="<?= (int)$harga_baris ?>">
                 <td class="sel-produk">
                     <img src="<?= e(gambar_url($p['gambar'])) ?>" alt="">
                     <span class="sel-produk-teks">
                         <a href="produk.php?id=<?= $p['id'] ?>"><?= e($p['nama']) ?></a>
                         <?php if ($warna !== ''): ?><small class="warna-dipilih">Warna: <?= e($warna) ?></small><?php endif; ?>
+                        <?php if ($huruf > 0): ?><small class="warna-dipilih">Jumlah huruf: <?= (int)$huruf ?> huruf</small><?php endif; ?>
                     </span>
                 </td>
-                <td data-label="Harga"><?= rupiah($p['harga']) ?></td>
+                <td data-label="Harga"><?= rupiah($harga_baris) ?></td>
                 <td data-label="Jumlah">
                     <form method="post" class="form-qty">
                         <input type="hidden" name="csrf" value="<?= csrf_token() ?>">
@@ -148,6 +158,7 @@ require __DIR__ . '/includes/header.php';
                         <input type="hidden" name="kunci" value="<?= e((string)$kunci) ?>">
                         <input type="hidden" name="id" value="<?= $p['id'] ?>">
                         <input type="hidden" name="warna" value="<?= e($warna) ?>">
+                        <input type="hidden" name="huruf" value="<?= (int)$huruf ?>">
                         <input type="hidden" name="tujuan" value="<?= e($tujuan_kode) ?>">
                         <input type="hidden" name="kurir" value="<?= e($kurir_dipilih) ?>">
                         <span class="qty-stepper vertikal">
@@ -157,7 +168,7 @@ require __DIR__ . '/includes/header.php';
                         </span>
                     </form>
                 </td>
-                <td data-label="Subtotal"><strong data-subtotal-baris><?= rupiah($p['harga'] * $qty) ?></strong></td>
+                <td data-label="Subtotal"><strong data-subtotal-baris><?= rupiah($harga_baris * $qty) ?></strong></td>
                 <td class="sel-hapus">
                     <form method="post">
                         <input type="hidden" name="csrf" value="<?= csrf_token() ?>">
@@ -165,6 +176,7 @@ require __DIR__ . '/includes/header.php';
                         <input type="hidden" name="kunci" value="<?= e((string)$kunci) ?>">
                         <input type="hidden" name="id" value="<?= $p['id'] ?>">
                         <input type="hidden" name="warna" value="<?= e($warna) ?>">
+                        <input type="hidden" name="huruf" value="<?= (int)$huruf ?>">
                         <input type="hidden" name="tujuan" value="<?= e($tujuan_kode) ?>">
                         <input type="hidden" name="kurir" value="<?= e($kurir_dipilih) ?>">
                         <button class="tombol kecil bahaya" type="submit">Hapus</button>

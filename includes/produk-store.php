@@ -15,6 +15,120 @@ function produk_json_path(): string {
     return dirname(__DIR__) . '/data/produk.json';
 }
 
+/* ---------- Harga per huruf (produk tertentu) ---------- */
+
+/** Produk yang memakai opsi jumlah huruf. Tambah id di sini bila perlu. */
+const PRODUK_HURUF_IDS = [5, 7];
+
+/** Jumlah huruf maksimum yang bisa dipilih. */
+const PRODUK_HURUF_MAKS = 10;
+
+/** Harga default 1 huruf dan tambahan tiap huruf berikutnya (Rp). */
+const PRODUK_HURUF_AWAL_DEFAULT   = 12000;
+const PRODUK_HURUF_TAMBAH_DEFAULT = 5000;
+
+/** Path file konfigurasi harga huruf (fallback lokal). */
+function produk_huruf_json_path(): string {
+    return dirname(__DIR__) . '/data/huruf.json';
+}
+
+/** Reset cache konfigurasi harga huruf dalam satu request. */
+function produk_huruf_cache_reset(): void {
+    unset($GLOBALS['produk_huruf_cache']);
+}
+
+/** Apakah produk ini punya opsi jumlah huruf? */
+function produk_huruf_aktif(array $p): bool {
+    return in_array((int)($p['id'] ?? 0), PRODUK_HURUF_IDS, true);
+}
+
+/**
+ * Konfigurasi harga huruf untuk satu produk.
+ * Disimpan di tabel `pengaturan` (Supabase) atau data/huruf.json (lokal).
+ */
+function produk_huruf_config(array $p): array {
+    $id = (int)($p['id'] ?? 0);
+    $nonaktif = ['aktif' => false, 'awal' => 0, 'tambah' => 0, 'maks' => 0];
+
+    if (!produk_huruf_aktif($p)) return $nonaktif;
+    if (isset($GLOBALS['produk_huruf_cache'][$id])) return $GLOBALS['produk_huruf_cache'][$id];
+
+    $awal   = PRODUK_HURUF_AWAL_DEFAULT;
+    $tambah = PRODUK_HURUF_TAMBAH_DEFAULT;
+    $mentah = sb_aktif() ? sb_pengaturan('produk_huruf_' . $id) : null;
+
+    // Fallback lokal bila Supabase tidak aktif / nilai belum ada.
+    if ($mentah === null || $mentah === '') {
+        $path = produk_huruf_json_path();
+        if (is_file($path)) {
+            $isi = json_decode((string)file_get_contents($path), true);
+            if (is_array($isi) && isset($isi[$id])) $mentah = $isi[$id];
+        }
+    }
+
+    if (is_string($mentah) && $mentah !== '') {
+        $mentah = json_decode($mentah, true);
+    }
+
+    if (is_array($mentah)) {
+        if (array_key_exists('awal', $mentah))   $awal   = max(0, (int)$mentah['awal']);
+        if (array_key_exists('tambah', $mentah)) $tambah = max(0, (int)$mentah['tambah']);
+    }
+
+    return $GLOBALS['produk_huruf_cache'][$id] = [
+        'aktif'  => true,
+        'awal'   => $awal,
+        'tambah' => $tambah,
+        'maks'   => PRODUK_HURUF_MAKS,
+    ];
+}
+
+/**
+ * Harga jual produk untuk jumlah huruf tertentu.
+ * $huruf 0 atau 1 berarti harga 1 huruf. Produk tanpa opsi huruf memakai harga biasa.
+ */
+function produk_harga(array $p, int $huruf = 0): int {
+    $cfg = produk_huruf_config($p);
+    if (empty($cfg['aktif'])) return max(0, (int)($p['harga'] ?? 0));
+
+    $huruf = max(1, min((int)$cfg['maks'], $huruf));
+    return max(0, (int)$cfg['awal'] + (($huruf - 1) * (int)$cfg['tambah']));
+}
+
+/** Simpan konfigurasi harga huruf (Supabase `pengaturan` / file lokal). */
+function produk_huruf_simpan(int $id, int $awal, int $tambah): bool {
+    if (!in_array($id, PRODUK_HURUF_IDS, true)) return false;
+
+    $nilai = [
+        'awal'   => max(0, $awal),
+        'tambah' => max(0, $tambah),
+    ];
+    $json = json_encode($nilai, JSON_UNESCAPED_SLASHES);
+    if ($json === false) return false;
+
+    if (sb_aktif()) {
+        $ok = sb_pengaturan_set('produk_huruf_' . $id, $json);
+        produk_huruf_cache_reset();
+        return $ok;
+    }
+
+    $path = produk_huruf_json_path();
+    $dir  = dirname($path);
+    if (!is_dir($dir)) @mkdir($dir, 0775, true);
+
+    $semua = [];
+    if (is_file($path)) {
+        $isi = json_decode((string)file_get_contents($path), true);
+        if (is_array($isi)) $semua = $isi;
+    }
+    $semua[$id] = $nilai;
+
+    $tulis = json_encode($semua, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    $ok = $tulis !== false && @file_put_contents($path, $tulis . "\n", LOCK_EX) !== false;
+    produk_huruf_cache_reset();
+    return $ok;
+}
+
 /** Reset cache produk dalam satu request. */
 function produk_cache_reset(): void {
     unset($GLOBALS['produk_cache']);

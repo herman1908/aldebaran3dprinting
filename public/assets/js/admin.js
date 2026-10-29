@@ -335,3 +335,34 @@
     if (row) row.remove();
   });
 })();
+
+/* =========================================================
+   Admin — pratinjau harga per huruf (produk tertentu)
+   ========================================================= */
+(function () {
+  'use strict';
+
+  var awal     = document.getElementById('hurufAwal');
+  var tambah   = document.getElementById('hurufTambah');
+  var pratinjau = document.getElementById('hurufPratinjau');
+  if (!awal || !tambah || !pratinjau) return;
+
+  function rupiah(n) {
+    return 'Rp ' + (Math.round(n) || 0).toLocaleString('id-ID');
+  }
+
+  function perbarui() {
+    var a = Math.max(0, parseInt(awal.value, 10) || 0);
+    var t = Math.max(0, parseInt(tambah.value, 10) || 0);
+
+    Array.prototype.forEach.call(pratinjau.querySelectorAll('.admin-huruf-chip'), function (chip) {
+      var i = parseInt(chip.getAttribute('data-huruf'), 10) || 1;
+      var nilai = chip.querySelector('span');
+      if (nilai) nilai.textContent = rupiah(a + (i - 1) * t);
+    });
+  }
+
+  awal.addEventListener('input', perbarui);
+  tambah.addEventListener('input', perbarui);
+  perbarui();
+})();

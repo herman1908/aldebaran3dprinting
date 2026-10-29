@@ -74,8 +74,8 @@ if ($kat === 'terlaris') {
         $ub = !empty($b['unggulan']) ? 1 : 0;
         if ($ua !== $ub) return $ub <=> $ua;
         switch ($urut) {
-            case 'termurah': return $a['harga'] <=> $b['harga'];
-            case 'termahal': return $b['harga'] <=> $a['harga'];
+            case 'termurah': return produk_harga($a, 0) <=> produk_harga($b, 0);
+            case 'termahal': return produk_harga($b, 0) <=> produk_harga($a, 0);
             case 'terbaru':  return $b['id'] <=> $a['id'];
             default:         return $b['suka'] <=> $a['suka'];
         }
@@ -155,7 +155,7 @@ require __DIR__ . '/includes/header.php';
                         <div class="hero-slide-info">
                             <div>
                                 <span class="hero-slide-label">Mulai dari</span>
-                                <span class="hero-slide-harga"><?= rupiah($hp['harga']) ?></span>
+                                <span class="hero-slide-harga"><?= rupiah(produk_harga($hp, 0)) ?></span>
                             </div>
                             <a class="tombol kecil hero-slide-cta" href="produk.php?id=<?= $hp['id'] ?>">Lihat <span aria-hidden="true">→</span></a>
                         </div>
@@ -226,11 +226,12 @@ require __DIR__ . '/includes/header.php';
                         <span class="statistik"><?= ringkas($p['suka']) ?> suka</span>
                     </div>
                     <div class="kartu-bawah">
-                        <strong class="harga"><?= rupiah($p['harga']) ?></strong>
+                        <strong class="harga"><?= rupiah(produk_harga($p, 0)) ?></strong>
                         <form method="post" action="keranjang.php">
                             <input type="hidden" name="csrf" value="<?= csrf_token() ?>">
                             <input type="hidden" name="aksi" value="tambah">
                             <input type="hidden" name="id" value="<?= $p['id'] ?>">
+                            <?php if (produk_huruf_aktif($p)): ?><input type="hidden" name="huruf" value="1"><?php endif; ?>
                             <button class="tombol kecil" type="submit">+ Keranjang</button>
                         </form>
                     </div>

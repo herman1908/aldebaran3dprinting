@@ -76,6 +76,48 @@
         });
     });
 
+    // Pilihan jumlah huruf (produk tertentu)
+    var hurufBtns = document.querySelectorAll('.huruf-btn');
+    if (hurufBtns.length) {
+        var hurufInput    = document.getElementById('hurufInput');
+        var hurufLabel    = document.getElementById('hurufTerpilih');
+        var hurufJumlah   = document.getElementById('hurufJumlahLabel');
+        var hurufRincian  = document.getElementById('hurufRincian');
+        var hargaUtamaEl  = document.getElementById('hargaUtama');
+
+        var rupiahHuruf = function (n) {
+            return 'Rp ' + (Math.round(n) || 0).toLocaleString('id-ID');
+        };
+
+        hurufBtns.forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var jml   = parseInt(btn.getAttribute('data-huruf'), 10) || 1;
+                var harga = parseInt(btn.getAttribute('data-harga'), 10) || 0;
+
+                hurufBtns.forEach(function (x) {
+                    x.classList.remove('aktif');
+                    x.setAttribute('aria-pressed', 'false');
+                });
+                btn.classList.add('aktif');
+                btn.setAttribute('aria-pressed', 'true');
+
+                if (hurufInput)   hurufInput.value = jml;
+                if (hurufLabel)   hurufLabel.textContent = jml + ' Huruf';
+                if (hurufJumlah)  hurufJumlah.textContent = jml + ' huruf';
+                if (hurufRincian) hurufRincian.textContent = rupiahHuruf(harga) + ' untuk ' + jml + ' huruf';
+
+                if (hargaUtamaEl) {
+                    hargaUtamaEl.textContent = rupiahHuruf(harga);
+                    hargaUtamaEl.setAttribute('data-harga', harga);
+                    hargaUtamaEl.animate(
+                        [{ transform: 'scale(1)' }, { transform: 'scale(1.06)' }, { transform: 'scale(1)' }],
+                        { duration: 240 }
+                    );
+                }
+            });
+        });
+    }
+
     // Reveal on scroll — bikin kartu muncul satu-satu, aesthetic
     var revealEls = document.querySelectorAll('.reveal');
     if ('IntersectionObserver' in window && revealEls.length) {

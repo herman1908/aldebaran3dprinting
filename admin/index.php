@@ -329,7 +329,12 @@ require __DIR__ . '/../includes/admin-head.php';
                             <span class="admin-chip"><?= e($kategori[$k] ?? $k) ?></span>
                         <?php endforeach; ?>
                     </td>
-                    <td class="admin-kanan"><?= rupiah($p['harga']) ?></td>
+                    <td class="admin-kanan">
+                        <?= rupiah(produk_harga($p, 0)) ?>
+                        <?php $cfg_h = produk_huruf_config($p); if (!empty($cfg_h['aktif'])): ?>
+                            <span class="admin-sub">+<?= e(rupiah((int)$cfg_h['tambah'])) ?>/huruf</span>
+                        <?php endif; ?>
+                    </td>
                     <td class="admin-kanan"><?= ringkas($p['suka']) ?></td>
                     <td class="admin-kanan"><?= (int)checkout_jumlah($p['id']) ?><span class="admin-sub"><?= in_array($p['id'], $terlaris_ids, true) ? ' · terlaris' : '' ?></span></td>
                     <td class="admin-kanan">

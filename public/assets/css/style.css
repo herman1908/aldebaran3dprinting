@@ -430,6 +430,12 @@ img{max-width:100%;display:block}
 .warna-dot.aktif{outline:3px solid #8B5CF6;outline-offset:2px;transform:scale(1.12)}
 .warna-dot.pink{background:#FFB3C7}.warna-dot.mint{background:#B8E8C8}.warna-dot.sky{background:#B9E2FF}.warna-dot.lilac{background:#D7C2FF}.warna-dot.lemon{background:#FFE58A}
 .catatan{padding:12px 14px;background:var(--sand);border:2px dashed #EFD48A;border-radius:16px;font-size:13.5px;color:#7A6030;font-weight:700}
+.harga-huruf-ket{margin:-6px 0 10px;font-size:13px;color:var(--muted);font-weight:700}
+.huruf-picker{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:16px 0 10px}
+.huruf-btn{padding:8px 14px;border-radius:999px;border:2px solid rgba(255,255,255,.9);background:var(--bg);color:var(--ink);font-family:var(--font-judul);font-weight:800;font-size:13px;cursor:pointer;box-shadow:var(--sh-brutal-sm);transition:transform .13s var(--ease-pop),background .13s,color .13s}
+.huruf-btn:hover{transform:translateY(-2px);background:#fff}
+.huruf-btn.aktif{background:linear-gradient(135deg,var(--pink),var(--lilac));color:#4B2E63;box-shadow:var(--sh-brutal-in);transform:translateY(0)}
+.huruf-btn:focus-visible{outline:3px solid #8B5CF6;outline-offset:2px}
 .tag-baris{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0}
 .form-beli{display:flex;align-items:center;gap:12px;margin-top:20px;flex-wrap:wrap;background:var(--bg);border:2px solid #fff;padding:12px 14px;border-radius:var(--r-md);box-shadow:var(--sh-brutal-in)}
 .form-beli label{font-weight:800;font-size:13.5px}

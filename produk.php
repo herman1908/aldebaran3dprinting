@@ -30,9 +30,14 @@ if (!$galeri) $galeri = [''];
 $label_galeri = ['Utama', 'B', 'C', 'D', 'E', 'F'];
 $terlaris_set = produk_terlaris_set();
 
+// Opsi harga per huruf (hanya produk tertentu).
+$huruf_cfg    = produk_huruf_config($p);
+$huruf_aktif  = !empty($huruf_cfg['aktif']);
+$harga_tampil = produk_harga($p, 0);
+
 // Pratinjau tautan memakai foto produk ini (WhatsApp/Facebook/Telegram).
 $og_judul     = $p['nama'] . ' | ' . NAMA_TOKO;
-$og_deskripsi = $p['nama'] . ' — ' . rupiah((int)$p['harga']) . '. ' . ($p['deskripsi'] ?? '');
+$og_deskripsi = $p['nama'] . ' — ' . rupiah($harga_tampil) . '. ' . ($p['deskripsi'] ?? '');
 $og_url       = url_absolut('/produk.php?id=' . $p['id']);
 if (($galeri[0] ?? '') !== '') {
     $og_gambar = gambar_url($galeri[0]);
@@ -87,7 +92,10 @@ require __DIR__ . '/includes/header.php';
             <span>4.9 · <?= ringkas($p['suka']) ?> suka<?php if ($p['unduhan'] > 0): ?> · <?= ringkas($p['unduhan']) ?> terjual<?php endif; ?></span>
         </div>
         <p class="tag-usia warna-<?= e($warna) ?>"><?= e($kat_label) ?></p>
-        <p class="harga-besar"><?= rupiah($p['harga']) ?></p>
+        <p class="harga-besar" id="hargaUtama" data-harga="<?= (int)$harga_tampil ?>"><?= rupiah($harga_tampil) ?></p>
+        <?php if ($huruf_aktif): ?>
+            <p class="harga-huruf-ket">Harga untuk <strong id="hurufJumlahLabel">1 huruf</strong> · tambah <?= rupiah((int)$huruf_cfg['tambah']) ?> per huruf berikutnya.</p>
+        <?php endif; ?>
         <p><?= e($p['deskripsi']) ?></p>
 
         <?php $pilihan_warna = $p['pilihan_warna'] ?? []; ?>
@@ -112,6 +120,23 @@ require __DIR__ . '/includes/header.php';
         <p class="catatan">Warna terpilih: <strong id="warnaTerpilih"><?= e($pilihan_warna[0]['nama']) ?></strong> — otomatis masuk ke keranjang dan pesan WhatsApp.</p>
         <?php endif; ?>
 
+        <?php if ($huruf_aktif): ?>
+        <div class="huruf-picker" id="hurufPicker" aria-label="Pilih jumlah huruf">
+            <strong style="font-size:13.5px">Jumlah huruf:</strong>
+            <?php for ($i = 1; $i <= (int)$huruf_cfg['maks']; $i++):
+                $harga_h = (int)$huruf_cfg['awal'] + (($i - 1) * (int)$huruf_cfg['tambah']);
+            ?>
+                <button type="button"
+                        class="huruf-btn<?= $i === 1 ? ' aktif' : '' ?>"
+                        data-huruf="<?= $i ?>"
+                        data-harga="<?= $harga_h ?>"
+                        aria-pressed="<?= $i === 1 ? 'true' : 'false' ?>"
+                        title="<?= e($i . ' huruf — ' . rupiah($harga_h)) ?>"><?= $i ?> Huruf</button>
+            <?php endfor; ?>
+        </div>
+        <p class="catatan">Jumlah huruf terpilih: <strong id="hurufTerpilih">1 Huruf</strong> — <span id="hurufRincian"><?= e(rupiah((int)$huruf_cfg['awal']) . ' untuk 1 huruf') ?></span>.</p>
+        <?php endif; ?>
+
         <div class="tag-baris">
             <?php foreach ($p['kategori'] as $k): ?>
                 <a class="chip" href="index.php?kategori=<?= e($k) ?>"><?= e($kategori[$k] ?? $k) ?></a>
@@ -123,6 +148,9 @@ require __DIR__ . '/includes/header.php';
             <input type="hidden" name="aksi" value="tambah">
             <input type="hidden" name="id" value="<?= $p['id'] ?>">
             <input type="hidden" name="warna" id="warnaInput" value="<?= e($pilihan_warna[0]['nama'] ?? '') ?>">
+            <?php if ($huruf_aktif): ?>
+                <input type="hidden" name="huruf" id="hurufInput" value="1">
+            <?php endif; ?>
             <label for="qty">Jumlah</label>
             <span class="qty-stepper">
                 <button type="button" data-step="-1" aria-label="Kurangi">−</button>
@@ -144,7 +172,7 @@ require __DIR__ . '/includes/header.php';
                 <a class="kartu-gambar warna-<?= e($w) ?>" href="produk.php?id=<?= $t['id'] ?>">
                     <img src="<?= e(gambar_url($t['gambar'])) ?>" alt="<?= e($t['nama']) ?>" loading="lazy">
                 </a>
-                <div class="kartu-isi"><h3 class="kartu-judul"><a href="produk.php?id=<?= $t['id'] ?>"><?= e($t['nama']) ?></a></h3><strong class="harga"><?= rupiah($t['harga']) ?></strong></div>
+                <div class="kartu-isi"><h3 class="kartu-judul"><a href="produk.php?id=<?= $t['id'] ?>"><?= e($t['nama']) ?></a></h3><strong class="harga"><?= rupiah(produk_harga($t, 0)) ?></strong></div>
             </article>
         <?php endforeach; ?>
     </section>

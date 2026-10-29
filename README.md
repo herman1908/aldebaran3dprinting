@@ -90,6 +90,21 @@ menaruhnya di JavaScript, HTML, atau repo publik. File `.env` sudah di-.gitignor
 Jika password database lupa, hapus baris di tabel `admin_akun` lewat dashboard Supabase;
 login akan kembali memakai `ADMIN_PASSWORD` dari environment.
 
+### Harga per huruf
+
+Produk **#5** dan **#7** punya opsi jumlah huruf (1–10). Harga dihitung otomatis:
+
+```
+harga = harga 1 huruf + (jumlah huruf - 1) × tambahan per huruf
+```
+
+- Default: Rp 12.000 untuk 1 huruf, +Rp 5.000 tiap huruf berikutnya.
+- Admin bisa mengubah kedua nilai di form edit produk #5 / #7. Nilainya disimpan di tabel
+  `pengaturan` (Supabase) dengan kunci `produk_huruf_5` / `produk_huruf_7`, atau di
+  `data/huruf.json` saat Supabase tidak aktif.
+- Produk yang memakai opsi ini diatur lewat konstanta `PRODUK_HURUF_IDS` di
+  `includes/produk-store.php`.
+
 ### Upload gambar
 
 Di form admin, seret/klik gambar untuk diunggah langsung ke Cloudinary (unsigned preset). URL `secure_url` yang dikembalikan otomatis terisi ke kolom gambar. Produk dengan URL `https://...` akan menampilkan gambar dari Cloudinary; nama file lokal tetap diambil dari `public/images/`.

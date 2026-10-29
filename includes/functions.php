@@ -151,15 +151,26 @@ function set_cookie_aman(string $nama, string $nilai, int $detik): void {
 
 /* ---------- Keranjang (cookie bertanda tangan) ---------- */
 
-/** Kunci baris keranjang: id produk + warna bila produk punya pilihan warna. */
-function keranjang_kunci(int $id, string $warna = ''): string {
+/**
+ * Kunci baris keranjang: id produk + warna (bila ada) + jumlah huruf (bila ada).
+ * Contoh: "5", "5:Hitam", "5:Hitam:3", "5::3".
+ */
+function keranjang_kunci(int $id, string $warna = '', int $huruf = 0): string {
+    if ($huruf > 0) return $id . ':' . $warna . ':' . $huruf;
     return $warna !== '' ? $id . ':' . $warna : (string)$id;
 }
 
-/** Pisahkan kunci keranjang menjadi [id produk, nama warna]. */
+/**
+ * Pisahkan kunci keranjang menjadi [id produk, nama warna, jumlah huruf].
+ * Kunci lama tanpa jumlah huruf menghasilkan huruf = 0.
+ */
 function keranjang_urai(string $kunci): array {
-    $bagian = explode(':', $kunci, 2);
-    return [(int)($bagian[0] ?? 0), trim((string)($bagian[1] ?? ''))];
+    $bagian = explode(':', $kunci, 3);
+    return [
+        (int)($bagian[0] ?? 0),
+        trim((string)($bagian[1] ?? '')),
+        max(0, (int)($bagian[2] ?? 0)),
+    ];
 }
 
 /** Nama warna valid untuk produk; fallback ke warna pertama. */
@@ -195,7 +206,7 @@ function keranjang(): array {
 
     $bersih = [];
     foreach ($arr as $kunci => $qty) {
-        [$id, $warna] = keranjang_urai((string)$kunci);
+        [$id, $warna, $huruf] = keranjang_urai((string)$kunci);
         $qty = (int)$qty;
         if ($qty < 1) continue;
 
@@ -203,7 +214,16 @@ function keranjang(): array {
         if (!$p) continue;
 
         $warna = produk_warna_pilih($p, $warna);
-        $kunci = keranjang_kunci($id, $warna);
+
+        // Produk bervolume huruf selalu minimal 1 huruf; produk lain tanpa huruf.
+        if (produk_huruf_aktif($p)) {
+            $maks  = (int)(produk_huruf_config($p)['maks'] ?? PRODUK_HURUF_MAKS);
+            $huruf = max(1, min($maks, $huruf));
+        } else {
+            $huruf = 0;
+        }
+
+        $kunci = keranjang_kunci($id, $warna, $huruf);
         $bersih[$kunci] = min(99, ($bersih[$kunci] ?? 0) + $qty);
     }
     return $bersih;
@@ -223,9 +243,9 @@ function jumlah_keranjang(): int {
 function total_keranjang(): int {
     $total = 0;
     foreach (keranjang() as $kunci => $qty) {
-        [$id] = keranjang_urai((string)$kunci);
+        [$id, , $huruf] = keranjang_urai((string)$kunci);
         $p = cari_produk($id);
-        if ($p) $total += $p['harga'] * $qty;
+        if ($p) $total += produk_harga($p, $huruf) * $qty;
     }
     return $total;
 }
@@ -239,14 +259,15 @@ function pesan_checkout_whatsapp(?array $ongkir = null): string {
     $subtotal = 0;
     $no       = 0;
     foreach (keranjang() as $kunci => $qty) {
-        [$id, $warna] = keranjang_urai((string)$kunci);
+        [$id, $warna, $huruf] = keranjang_urai((string)$kunci);
         $p = cari_produk($id);
         if (!$p) continue;
         $no++;
-        $sub       = $p['harga'] * $qty;
+        $sub       = produk_harga($p, $huruf) * $qty;
         $subtotal += $sub;
         $baris[]   = $no . '. ' . $p['nama'] . ' x' . $qty . ' = ' . rupiah($sub);
         if ($warna !== '') $baris[] = '   Warna yang dipilih : ' . $warna;
+        if ($huruf > 0)   $baris[] = '   Jumlah huruf       : ' . $huruf . ' huruf';
     }
 
     $lines   = [];

@@ -52,19 +52,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $baru_id = produk_simpan($data);
             if ($baru_id > 0) {
-                header('Location: /admin/?pesan=disimpan&id=' . $baru_id);
-                exit;
-            }
-            $galat = 'Gagal menyimpan produk.';
-            if (!sb_aktif()) {
-                $galat .= ' Supabase belum terbaca di server ini (SUPABASE_URL/SUPABASE_SERVICE_KEY). Di Vercel, isi env lalu redeploy.';
-            } elseif (sb_error_terakhir() !== '') {
-                $galat .= ' Detail: ' . sb_error_terakhir();
-                if (stripos(sb_error_terakhir(), 'pilihan_warna') !== false) {
-                    $galat .= ' Jalankan migrasi kolom pilihan_warna di Supabase (lihat supabase/schema.sql).';
+                // Simpan harga per huruf bila produk ini memakai opsi huruf.
+                $huruf_ok = true;
+                if (in_array($baru_id, PRODUK_HURUF_IDS, true) && isset($_POST['huruf_awal'], $_POST['huruf_tambah'])) {
+                    $huruf_ok = produk_huruf_simpan($baru_id, (int)$_POST['huruf_awal'], (int)$_POST['huruf_tambah']);
                 }
+                if ($huruf_ok) {
+                    header('Location: /admin/?pesan=disimpan&id=' . $baru_id);
+                    exit;
+                }
+                $galat = 'Produk tersimpan, tetapi harga per huruf gagal disimpan. Coba simpan ulang.';
+            } else {
+                $galat = 'Gagal menyimpan produk.';
+                if (!sb_aktif()) {
+                    $galat .= ' Supabase belum terbaca di server ini (SUPABASE_URL/SUPABASE_SERVICE_KEY). Di Vercel, isi env lalu redeploy.';
+                } elseif (sb_error_terakhir() !== '') {
+                    $galat .= ' Detail: ' . sb_error_terakhir();
+                    if (stripos(sb_error_terakhir(), 'pilihan_warna') !== false) {
+                        $galat .= ' Jalankan migrasi kolom pilihan_warna di Supabase (lihat supabase/schema.sql).';
+                    }
+                }
+                $galat .= ' Buka menu Status untuk diagnostik.';
             }
-            $galat .= ' Buka menu Status untuk diagnostik.';
         }
     }
 }
@@ -94,6 +103,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $foto = $f['galeri'] ?: ($f['gambar'] !== '' ? [$f['gambar']] : []);
+
+// Harga per huruf hanya untuk produk tertentu (mis. #5 & #7).
+$huruf_admin_aktif = (int)$f['id'] > 0 && in_array((int)$f['id'], PRODUK_HURUF_IDS, true);
+$huruf_cfg_admin   = $huruf_admin_aktif
+    ? produk_huruf_config($f)
+    : ['aktif' => false, 'awal' => PRODUK_HURUF_AWAL_DEFAULT, 'tambah' => PRODUK_HURUF_TAMBAH_DEFAULT, 'maks' => PRODUK_HURUF_MAKS];
+if ($huruf_admin_aktif && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (isset($_POST['huruf_awal']))   $huruf_cfg_admin['awal']   = max(0, (int)$_POST['huruf_awal']);
+    if (isset($_POST['huruf_tambah'])) $huruf_cfg_admin['tambah'] = max(0, (int)$_POST['huruf_tambah']);
+}
 
 $judul_halaman = $edit ? 'Edit Produk' : 'Tambah Produk';
 require __DIR__ . '/../includes/admin-head.php';
@@ -128,7 +147,7 @@ require __DIR__ . '/../includes/admin-head.php';
 
                 <div class="admin-row2">
                     <div>
-                        <label class="admin-label">Harga (Rp)</label>
+                        <label class="admin-label">Harga (Rp)<?php if ($huruf_admin_aktif): ?><span class="admin-label-note">mengikuti harga per huruf</span><?php endif; ?></label>
                         <input class="admin-input" type="number" name="harga" min="0" value="<?= (int)$f['harga'] ?>">
                     </div>
                     <div>
@@ -140,6 +159,34 @@ require __DIR__ . '/../includes/admin-head.php';
                         </select>
                     </div>
                 </div>
+
+                <?php if ($huruf_admin_aktif): ?>
+                <div class="admin-huruf" id="hurufAdmin">
+                    <label class="admin-label">Harga per Huruf <span class="admin-label-note">khusus produk ini</span></label>
+                    <div class="admin-row2">
+                        <div>
+                            <label class="admin-label">Harga 1 Huruf (Rp)</label>
+                            <input class="admin-input" type="number" min="0" step="500" name="huruf_awal" id="hurufAwal" value="<?= (int)$huruf_cfg_admin['awal'] ?>">
+                        </div>
+                        <div>
+                            <label class="admin-label">Tambahan per Huruf Berikutnya (Rp)</label>
+                            <input class="admin-input" type="number" min="0" step="500" name="huruf_tambah" id="hurufTambah" value="<?= (int)$huruf_cfg_admin['tambah'] ?>">
+                        </div>
+                    </div>
+                    <span class="admin-sub">Harga produk di halaman publik dihitung otomatis: harga 1 huruf + tambahan × (jumlah huruf − 1).</span>
+                    <p class="admin-label">Pratinjau harga 1–<?= (int)$huruf_cfg_admin['maks'] ?> huruf</p>
+                    <div class="admin-huruf-pratinjau" id="hurufPratinjau">
+                        <?php for ($i = 1; $i <= (int)$huruf_cfg_admin['maks']; $i++):
+                            $harga_h = (int)$huruf_cfg_admin['awal'] + (($i - 1) * (int)$huruf_cfg_admin['tambah']);
+                        ?>
+                        <span class="admin-huruf-chip" data-huruf="<?= $i ?>">
+                            <b><?= $i ?> Huruf</b>
+                            <span><?= e(rupiah($harga_h)) ?></span>
+                        </span>
+                        <?php endfor; ?>
+                    </div>
+                </div>
+                <?php endif; ?>
 
                 <?php $palet_admin = produk_palet_warna(); ?>
                 <label class="admin-label">Pilihan Warna di Detail Produk <span class="admin-label-note"><?= count($palet_admin) ?> warna tetap</span></label>
@@ -153,7 +200,7 @@ require __DIR__ . '/../includes/admin-head.php';
                         $aktif = in_array(strtoupper(ltrim($w['hex'], '#')), $hex_dipilih, true);
                     ?>
                     <label class="warna-palet-item<?= $aktif ? ' aktif' : '' ?>">
-                        <input type="checkbox" name="warna_pilih[]" value="<?= e($kunci) ?>" <?= $aktif ? '' : '' ?>>
+                        <input type="checkbox" name="warna_pilih[]" value="<?= e($kunci) ?>" <?= $aktif ? 'checked' : '' ?>>
                         <span class="warna-palet-dot" style="background:<?= e($w['hex']) ?>"></span>
                         <span class="warna-palet-teks">
                             <span class="warna-palet-nama"><?= e($w['nama']) ?></span>
