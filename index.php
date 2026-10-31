@@ -232,7 +232,11 @@ require __DIR__ . '/includes/header.php';
                             <input type="hidden" name="aksi" value="tambah">
                             <input type="hidden" name="id" value="<?= $p['id'] ?>">
                             <?php if (produk_huruf_aktif($p)): ?><input type="hidden" name="huruf" value="1"><?php endif; ?>
-                            <button class="tombol kecil" type="submit">+ Keranjang</button>
+                            <button class="btn-keranjang" type="submit" aria-label="Tambah ke keranjang">
+                                <span class="icon-cart" aria-hidden="true">🛒</span>
+                                <span class="text-add">+ Keranjang</span>
+                                <span class="checkmark"><span class="checkmark-icon" aria-hidden="true">✓</span><span class="checkmark-text"> Ditambahkan</span></span>
+                            </button>
                         </form>
                     </div>
                 </div>

@@ -387,6 +387,29 @@
         });
     }
 
+    // Animasi tombol "+ Keranjang": loading -> hijau "Ditambahkan" -> kembali semula
+    function animasiKeranjang(btn) {
+        if (!btn || btn.classList.contains('added')) return;
+        var teksAsli = btn.getAttribute('data-teks-asli') || btn.innerHTML;
+
+        btn.classList.add('added');
+        btn.innerHTML = '<span class="icon-cart" aria-hidden="true">🛒</span><span class="checkmark"><span class="checkmark-icon" aria-hidden="true">✓</span><span class="checkmark-text"> Ditambahkan</span></span>';
+
+        // Ikon keranjang di header ikut bergoyang
+        var headerCart = document.getElementById('icon-cart-header');
+        if (headerCart) {
+            headerCart.style.animation = 'cartBounce .6s';
+            setTimeout(function () { headerCart.style.animation = ''; }, 600);
+        }
+
+        setTimeout(function () {
+            btn.classList.remove('added');
+            btn.innerHTML = teksAsli;
+            btn.removeAttribute('data-teks-asli');
+            btn.disabled = false;
+        }, 2000);
+    }
+
     document.querySelectorAll('form').forEach(function (form) {
         var aksi = form.querySelector('input[name="aksi"]');
         if (!aksi || aksi.value !== 'tambah') return;
@@ -397,7 +420,14 @@
 
             var btn = form.querySelector('button[type=submit]');
             if (btn && btn.disabled) return;
-            if (btn) btn.disabled = true;
+            var tombolAnimasi = btn && btn.classList.contains('btn-keranjang');
+            if (btn) {
+                btn.disabled = true;
+                if (tombolAnimasi) {
+                    btn.setAttribute('data-teks-asli', btn.innerHTML);
+                    btn.innerHTML = '<span class="icon-cart" aria-hidden="true">⏳</span><span class="loading-text">Menambahkan...</span>';
+                }
+            }
 
             fetch(form.getAttribute('action') || 'keranjang.php', {
                 method: 'POST',
@@ -409,7 +439,10 @@
             }).then(function (data) {
                 if (!data || !data.ok) throw new Error('gagal');
                 perbaruiLencana(data.jumlah);
-                if (btn) {
+                if (!btn) return;
+                if (tombolAnimasi) {
+                    animasiKeranjang(btn);
+                } else {
                     btn.animate(
                         [{ transform: 'scale(1)' }, { transform: 'scale(.94)' }, { transform: 'scale(1)' }],
                         { duration: 220 }
@@ -417,7 +450,14 @@
                     setTimeout(function () { btn.disabled = false; }, 600);
                 }
             }).catch(function () {
-                if (btn) btn.disabled = false;
+                if (btn) {
+                    btn.classList.remove('added');
+                    if (btn.hasAttribute('data-teks-asli')) {
+                        btn.innerHTML = btn.getAttribute('data-teks-asli');
+                        btn.removeAttribute('data-teks-asli');
+                    }
+                    btn.disabled = false;
+                }
                 form.submit();
             });
         });
