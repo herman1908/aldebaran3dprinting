@@ -83,7 +83,7 @@ $f = $edit ?: [
     'id' => 0, 'nama' => '', 'penjual' => 'Aldebaran Studio', 'kategori' => [],
     'warna' => 'koral', 'harga' => 0, 'unduhan' => 0, 'suka' => 0,
     'gambar' => '', 'galeri' => [], 'deskripsi' => '', 'terlaris' => false, 'unggulan' => false,
-    'pilihan_warna' => produk_warna_default(),
+    'pilihan_warna' => [],
 ];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $galeri_urls    = array_values(array_unique(array_filter(array_map('trim', explode("\n", (string)($_POST['galeri_urls'] ?? ''))))));
