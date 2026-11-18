@@ -61,6 +61,7 @@ function statistik_diabaikan(string $path): bool {
     if (preg_match('#/admin(/|$)#i', $path)) return true;
     if (preg_match('#/api(/|$)#i', $path)) return true;
     if (preg_match('#/(assets|images)/#i', $path)) return true;
+    if (preg_match('#\.(ico|png|jpg|jpeg|svg|css|js|webp|gif|txt|xml|json|webmanifest)$#i', $path)) return true;
 
     // Akses langsung file admin (termasuk lewat subfolder htdocs).
     $script = str_replace('\\', '/', (string)($_SERVER['SCRIPT_NAME'] ?? ''));
@@ -177,10 +178,12 @@ function statistik_data(int $hari = 60): array {
     if (sb_aktif()) {
         $query = 'select=tanggal,halaman,rujukan,sumber,pengunjung'
                . '&tanggal=gte.' . rawurlencode($mulai)
-               . '&order=tanggal.asc&limit=50000';
+               . '&order=id.desc&limit=2000';
         $r = sb_request('GET', 'kunjungan', null, $query);
         if ($r['ok'] && is_array($r['data'])) {
-            return array_map('statistik_normalisasi', $r['data']);
+            $rows = array_map('statistik_normalisasi', $r['data']);
+            usort($rows, fn($a, $b) => strcmp($a['tanggal'], $b['tanggal']));
+            return $rows;
         }
         // Supabase gagal: coba fallback file lokal di bawah.
     }
