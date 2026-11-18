@@ -11,7 +11,7 @@
  */
 
 // LAT_LNG KOTA TNG : -6.1783, 106.6319
-const ONGKIR_ASAL_KOTA   = 'Tangerang';
+const ONGKIR_ASAL_KOTA   = 'Kadu Jaya, Curug, Kabupaten Tangerang';
 const ONGKIR_ASAL_LAT    = -6.242381239223328;
 const ONGKIR_ASAL_LNG    = 106.56267401834448;
 
