@@ -10,9 +10,12 @@
  * Ubah asal pengiriman lewat konstanta di bawah bila toko pindah lokasi.
  */
 
+// LAT_LNG KOTA TNG : -6.1783, 106.6319
 const ONGKIR_ASAL_KOTA   = 'Tangerang';
-const ONGKIR_ASAL_LAT    = -6.1783;
-const ONGKIR_ASAL_LNG    = 106.6319;
+const ONGKIR_ASAL_LAT    = -6.242381239223328;
+const ONGKIR_ASAL_LNG    = 106.56267401834448;
+
+// LAT_LNG GPA : -6.242381239223328, 106.56267401834448
 
 /** Berat default per produk (gram) bila produk tidak punya kolom `berat`. */
 const ONGKIR_BERAT_DEFAULT_GRAM = 200;
