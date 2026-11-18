@@ -30,6 +30,7 @@ if ($aksi_uji === 'uji_tulis' || $aksi_uji === 'uji_tulis_produk') {
         }
     } else {
         $r = sb_post('produk', [
+            'id'        => 999999,
             'nama'      => '__tes_status__',
             'harga'     => 1,
             'kategori'  => [],
@@ -43,11 +44,11 @@ if ($aksi_uji === 'uji_tulis' || $aksi_uji === 'uji_tulis_produk') {
         if (!$r['ok']) {
             $galat = 'Uji tulis produk gagal: ' . (sb_error_terakhir() ?: 'tidak diketahui');
         } else {
-            $hapus = sb_delete('produk', 'nama=eq.' . rawurlencode('__tes_status__'));
+            $hapus = sb_delete('produk', 'id=eq.999999');
             if ($hapus['ok']) {
                 $pesan = 'Uji tulis produk berhasil — kolom produk cocok dan baris uji sudah dihapus.';
             } else {
-                $galat = 'Produk uji tersimpan tetapi gagal dihapus. Hapus baris bernama __tes_status__ di Supabase.';
+                $galat = 'Produk uji tersimpan tetapi gagal dihapus. Hapus baris uji di Supabase.';
             }
         }
     }
