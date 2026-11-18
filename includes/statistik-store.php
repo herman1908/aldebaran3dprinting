@@ -172,6 +172,7 @@ function statistik_normalisasi(array $r): array {
 
 /** Ambil data kunjungan N hari terakhir (default 60 hari). */
 function statistik_data(int $hari = 60): array {
+    // Perbarui pengambilan data statistik pengunjung
     $hari  = max(1, $hari);
     $mulai = date('Y-m-d', strtotime('-' . ($hari - 1) . ' days'));
 
